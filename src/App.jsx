@@ -14,11 +14,3 @@ function App() {
 }
 
 export default App
-export function Logo() {
-  return (
-    <div className="logo-container">
-      <img src={reactLogo} className="logo react" alt="React logo" />
-      <img src={viteLogo} className="logo vite" alt="Vite logo" />
-    </div>
-  )
-}
