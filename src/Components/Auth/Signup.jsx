@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaGoogle, FaFacebook } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { signup } from '../../Apis/auth'; 
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -26,7 +27,6 @@ export default function Signup() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -83,22 +83,30 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Login via context
-      login({
-        email: formData.email,
+      // ✅ Call backend signup API
+      const result = await signup({
         firstName: formData.firstName,
         lastName: formData.lastName,
-        userType: 'user',
-        isAuthenticated: true
+        email: formData.email,
+        password: formData.password
       });
 
-      // Redirect to home page
-      navigate('/');
+      if (result.success) {
+        // ✅ Save user in AuthContext
+        login({
+          email: result.user.email,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          userType: result.user.role || 'user',
+          isAuthenticated: true
+        });
+
+        navigate('/'); // redirect on success
+      } else {
+        setErrors({ submit: result.message });
+      }
     } catch (error) {
-      setErrors({ submit: 'Signup failed. Please try again.' });
+      setErrors({ submit: 'Signup failed. Please try again.', error: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +114,6 @@ export default function Signup() {
 
   const handleSocialSignup = (provider) => {
     console.log(`Signup with ${provider}`);
-    // Implement social signup logic here
   };
 
   return (
