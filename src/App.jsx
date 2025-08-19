@@ -7,13 +7,18 @@ import AnimatedHeader from './Components/AnimatedHeader'
 import Collaborators from './Components/Collaborators'
 import TestimonialsCarousel from './Components/TestimonialsCarousel'
 import CustomerStoriesMasterFixed from './Components/CustomerStoriesMasterFixed'
-import Stats from './Components/Stats'
+import Stats from './Components/Stats Page/Stats'
 import Footer from './Components/Footer/Footer'
 import Login from './Components/Auth/Login'
 import Signup from './Components/Auth/Signup'
 import AdminLogin from './Components/Auth/AdminLogin'
 import { AuthProvider, useAuth } from './Components/Auth/AuthContext'
 import AdminDashboard from './Components/Admin/AdminDashboard'
+import EmpoweringSection from './empowering section/EmpoweringSection'
+import ContactUs from './Components/contactus';
+import BestsellersPage from './Shop/BestsellersPage';
+import AboutUs from './Components/Aboutus/Aboutus'
+import ProductPage from './Shop/Product/ProductPage'
 
 // Protected route component
 const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
@@ -49,6 +54,7 @@ const HomePage = () => {
       <Collaborators />
       <CustomerStoriesMasterFixed />
       <TestimonialsCarousel />
+      <EmpoweringSection />
     </>
   );
 };
@@ -65,29 +71,16 @@ function MainApp() {
       <div className="app">
         <Routes>
           {/* Auth routes with no navbar or footer */}
-          <Route 
-            path="/login" 
-            element={<Login />} 
-          />
-          <Route 
-            path="/signup" 
-            element={<Signup />} 
-          />
-          <Route 
-            path="/admin/login" 
-            element={<AdminLogin />} 
-          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           
           {/* Regular routes with navbar and footer */}
           <Route 
             path="/" 
             element={
               <>
-                <Navbar 
-                  isLoggedIn={isLoggedIn} 
-                  userType={userType} 
-                  onLogout={handleLogout}
-                />
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
                 <HomePage />
                 <Footer />
               </>
@@ -97,12 +90,18 @@ function MainApp() {
             path="/shop" 
             element={
               <>
-                <Navbar 
-                  isLoggedIn={isLoggedIn} 
-                  userType={userType} 
-                  onLogout={handleLogout}
-                />
-                <div className="container mx-auto py-8">Shop Page</div>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <BestsellersPage />
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/product/:id" 
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <ProductPage />
                 <Footer />
               </>
             } 
@@ -111,12 +110,8 @@ function MainApp() {
             path="/about" 
             element={
               <>
-                <Navbar 
-                  isLoggedIn={isLoggedIn} 
-                  userType={userType} 
-                  onLogout={handleLogout}
-                />
-                <div className="container mx-auto py-8">About Us Page</div>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <AboutUs />
                 <Footer />
               </>
             } 
@@ -125,12 +120,8 @@ function MainApp() {
             path="/contact" 
             element={
               <>
-                <Navbar 
-                  isLoggedIn={isLoggedIn} 
-                  userType={userType} 
-                  onLogout={handleLogout}
-                />
-                <div className="container mx-auto py-8">Contact Page</div>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <ContactUs />
                 <Footer />
               </>
             } 

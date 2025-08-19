@@ -1,0 +1,68 @@
+/*
+ * This file contains the CSS for the infinite scrolling marquee effect.
+ */
+
+.marquee-container {
+    width: 100%;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    padding: 0 1rem;
+    contain: layout style paint;
+    will-change: transform;
+}
+
+.marquee-content {
+    display: flex;
+    width: fit-content;
+    animation: scroll 25s linear infinite;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.marquee-container:hover .marquee-content {
+    animation-play-state: paused;
+}
+
+/* Optimized responsive adjustments */
+@media (max-width: 768px) {
+    .marquee-container {
+        padding: 0 0.5rem;
+    }
+    
+    .marquee-content {
+        animation-duration: 15s;
+    }
+}
+
+@media (max-width: 480px) {
+    .marquee-container {
+        padding: 0 0.25rem;
+    }
+    
+    .marquee-content {
+        animation-duration: 12s;
+    }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-content {
+        animation: none;
+    }
+    
+    .marquee-container:hover .marquee-content {
+        animation: none;
+    }
+}

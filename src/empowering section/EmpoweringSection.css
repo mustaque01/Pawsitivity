@@ -1,0 +1,119 @@
+.empowering-section {
+  background: linear-gradient(135deg, #CDFF47 0%, #B8E635 100%);
+  position: relative;
+  padding: 48px 24px;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.empowering-star {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+
+.empowering-content {
+  max-width: 900px;
+  margin-left: 0;
+  text-align: left;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.empowering-left-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.empowering-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2D2D2D;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.empowering-subtitle {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #2D2D2D;
+  margin: 8px 0 24px 0;
+  font-weight: 400;
+}
+
+.empowering-mission {
+  margin-top: 12px;
+}
+
+.empowering-mission-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #2D2D2D;
+  margin: 0;
+  text-align: left;
+}
+
+.empowering-form-section {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 18px;
+}
+
+.empowering-form-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.empowering-shop-btn {
+  background: #CDFF47;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #2D2D2D;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.empowering-shop-btn:hover {
+  background: #B8E635;
+  transform: translateY(-2px);
+}
+
+.empowering-paw-prints {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.paw-print {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.3;
+  color: #2D2D2D;
+  animation: float 6s ease-in-out infinite;
+}
+
+.paw-1 { top: 15%; right: 20%; animation-delay: 0s; }
+.paw-2 { top: 25%; right: 35%; animation-delay: 1s; }
+.paw-3 { top: 35%; right: 15%; animation-delay: 2s; }
+.paw-4 { top: 45%; right: 40%; animation-delay: 3s; }
+.paw-5 { top: 55%; right: 25%; animation-delay: 4s; }
+.paw-6 { top: 65%; right: 45%; animation-delay: 5s; }
+.paw-7 { top: 75%; right: 30%; animation-delay: 1.5s; }
+.paw-8 { top: 85%; right: 20%; animation-delay: 2.5s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
