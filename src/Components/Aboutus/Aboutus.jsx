@@ -1,60 +1,39 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import './Marquee.css';
+import marqueeImage1 from './assets/marquee1.jpg';
+import marqueeImage2 from './assets/marquee2.jpg';
+import marqueeImage3 from './assets/marquee3.jpg';
+import marqueeImage4 from './assets/marquee4.jpg';
+import marqueeImage5 from './assets/marquee5.jpg';
 
-// Lazy load images
+// Use imported images directly
 const marqueeImages = [
-    'https://picsum.photos/400/300?random=30',
-    'https://picsum.photos/400/300?random=31',
-    'https://picsum.photos/400/300?random=32',
-    'https://picsum.photos/400/300?random=33',
-    'https://picsum.photos/400/300?random=34'
+    marqueeImage1,
+    marqueeImage2,
+    marqueeImage3,
+    marqueeImage4,
+    marqueeImage5
 ];
 
-// Optimized Service Card with reduced animations
+// Optimized Service Card with improved visuals and responsiveness
 const ServiceCard = React.memo(({ step, title, description, icon, index, isVisible }) => {
     return (
-        <article className="group">
-            <div 
-                className={`p-6 lg:p-8 transition-all duration-300 bg-white shadow-sm border border-gray-100 rounded-xl hover:shadow-lg hover:-translate-y-1 w-full ${
-                    isVisible 
-                        ? 'opacity-100 translate-y-0' 
-                        : 'opacity-0 translate-y-4'
-                }`}
-                style={{ 
-                    transitionDelay: `${index * 50}ms`,
-                }}
-            >
-                <div className={`flex items-center justify-center w-14 h-14 mx-auto mb-6 text-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl transition-transform duration-200 ${
-                    isVisible ? 'scale-100' : 'scale-75'
-                }`}
-                style={{ transitionDelay: `${index * 50 + 25}ms` }}
-                >
-                    <span role="img" aria-label={`Step ${step}`}>{icon}</span>
+        <article
+            className={`group bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col items-center px-6 py-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+            style={{ transitionDelay: `${index * 50}ms` }}
+        >
+            <div className="flex items-center justify-center w-14 h-14 mb-4 text-3xl bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-sm">
+                <span role="img" aria-label={`Step ${step}`}>{icon}</span>
+            </div>
+            <div className="text-center flex-1 flex flex-col">
+                <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                    Step {step}
                 </div>
-                <div className="text-center space-y-3">
-                    <div className={`text-xs font-semibold text-blue-600 uppercase tracking-wider transition-opacity duration-200 ${
-                        isVisible ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    style={{ transitionDelay: `${index * 50 + 50}ms` }}
-                    >
-                        Step {step}
-                    </div>
-                    <h3 className={`text-lg font-bold text-gray-900 transition-all duration-200 leading-tight ${
-                        isVisible ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    style={{ transitionDelay: `${index * 50 + 75}ms` }}
-                    >
-                        {title}
-                    </h3>
-                    <p className={`text-sm leading-relaxed text-gray-600 transition-all duration-200 ${
-                        isVisible ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    style={{ transitionDelay: `${index * 50 + 100}ms` }}
-                    >
-                        {description}
-                    </p>
-                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+                <p className="text-sm text-gray-600">{description}</p>
             </div>
         </article>
     );
@@ -197,84 +176,69 @@ export default function AboutUs() {
         }
     ], []);
 
-    // Lazy load marquee images
-    const [marqueeImagesState, setMarqueeImages] = useState([]);
-
-    useEffect(() => {
-        const loadImages = async () => {
-            try {
-                const images = await Promise.all([
-                    marqueeImage1,
-                    marqueeImage2,
-                    marqueeImage3,
-                    marqueeImage4,
-                    marqueeImage5
-                ]);
-                setMarqueeImages(images.map(img => img.default));
-            } catch (error) {
-                console.error('Failed to load marquee images:', error);
-            }
-        };
-        
-        // Load images after initial render
-        setTimeout(loadImages, 100);
-    }, []);
-
     return (
         <>
-            {/* Hero Section - optimized */}
-            <div className="relative bg-gradient-to-br from-pink-300 via-pink-50 to-pink-200">
+            {/* Hero Section - improved */}
+            <div className="relative bg-gradient-to-br from-pink-300 via-pink-50 to-pink-200 pb-12">
                 {/* Reduced background elements for better performance */}
                 <div className="absolute top-20 left-10 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-20"></div>
                 <div className="absolute bottom-20 right-10 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-15"></div>
 
-                <header className="relative px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-24">
+                <header className="relative px-4 pt-12 pb-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl lg:text-6xl mb-6">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
                             What we <span className="text-yellow-500">Stand</span> for
                         </h1>
-                        <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                        <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
                             Pawsitivity delivers innovative solutions that create a safer world for stray animals while empowering women through meaningful, sustainable employment opportunities.
                         </p>
                     </div>
                 </header>
 
-                <div className="relative px-4 pb-16 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:pb-24">
-                    <ServicesSection services={services} />
-                </div>
-            </div>
-
-            {/* Gallery Section with Suspense */}
-            <Suspense fallback={<MarqueeLoading />}>
-                <section className="py-20 bg-white" aria-labelledby="gallery-heading">
-                    <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mb-16">
-                        <div className="text-center">
-                            <h2 id="gallery-heading" className="text-3xl font-bold text-gray-900 mb-4">Our Impact in Action</h2>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                                Witness the transformative change we're creating in communities across the country through our innovative programs and partnerships.
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="marquee-container">
-                        <div className="marquee-content">
-                            {[...marqueeImagesState, ...marqueeImagesState].map((src, i) => (
-                                <div key={i} className="flex-shrink-0 w-80 h-56 mx-4 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                                    <img 
-                                        src={src} 
-                                        alt={`Impact Gallery ${(i % marqueeImagesState.length) + 1}`} 
-                                        loading="lazy"
-                                        decoding="async"
-                                        width="320"
-                                        height="224"
-                                        className="object-cover w-full h-full hover:scale-105 transition-transform duration-300" 
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                {/* Responsive Services Section */}
+                <section className="relative px-2 sm:px-4 mx-auto max-w-7xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                        {services.map((s, index) => (
+                            <ServiceCard 
+                                key={s.step} 
+                                {...s} 
+                                index={index} 
+                                isVisible={true}
+                            />
+                        ))}
                     </div>
                 </section>
-            </Suspense>
+            </div>
+
+            {/* Gallery Section */}
+            <section className="py-20 bg-white" aria-labelledby="gallery-heading">
+                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mb-16">
+                    <div className="text-center">
+                        <h2 id="gallery-heading" className="text-3xl font-bold text-gray-900 mb-4">Our Impact in Action</h2>
+                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                            Witness the transformative change we're creating in communities across the country through our innovative programs and partnerships.
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="marquee-container">
+                    <div className="marquee-content">
+                        {[...marqueeImages, ...marqueeImages].map((src, i) => (
+                            <div key={i} className="flex-shrink-0 w-80 h-56 mx-4 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                                <img 
+                                    src={src} 
+                                    alt={`Impact Gallery ${(i % marqueeImages.length) + 1}`} 
+                                    loading="lazy"
+                                    decoding="async"
+                                    width="320"
+                                    height="224"
+                                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-300" 
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* Mission Section */}
             <div className="bg-gray-50">

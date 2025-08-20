@@ -166,6 +166,7 @@ export default function ContactUs() {
                         <Link 
                             to="/shop" 
                             className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 transition-all"
+                            style={{ color: "#fff" }} // Ensure text is white
                         >
                             Shop Our Products
                         </Link>

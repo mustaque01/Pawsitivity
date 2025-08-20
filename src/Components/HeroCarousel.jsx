@@ -84,7 +84,7 @@ export default function HeroCarousel() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[calc(100vh-5rem)] overflow-hidden bg-gray-900"
+      className="relative w-full h-[calc(100vh-5rem)] min-h-[420px] max-h-[900px] overflow-hidden bg-gray-900"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
@@ -105,17 +105,29 @@ export default function HeroCarousel() {
             ease: [0.25, 0.46, 0.45, 0.94]
           }}
         >
-          {/* Background Image with Parallax */}
+          {/* Responsive Background Image - contain for mobile, cover for md+ */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out"
+            className="absolute inset-0 w-full h-full transition-transform duration-700 ease-out"
             style={{
               backgroundImage: `url(${slides[currentSlide].image})`,
-              transform: `scale(1.1) translate3d(${(mousePosition.x - 0.5) * -30}px, ${(mousePosition.y - 0.5) * -30}px, 0)`
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              minHeight: '100%',
+              maxHeight: '100%',
+              width: '100%',
+              height: '100%',
+              objectPosition: 'bottom',
+              transform: `scale(1.01) translate3d(${(mousePosition.x - 0.5) * -10}px, ${(mousePosition.y - 0.5) * -10}px, 0)`
             }}
           />
-          
-          {/* Dynamic Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${slides[currentSlide].overlay}`} />
+          {/* Overlay - ensure it covers the image fully */}
+          <div
+            className={`fixed top-0 left-0 w-[calc(100%+50px)] h-full pointer-events-none bg-gradient-to-b ${slides[currentSlide].overlay}`}
+            style={{
+              zIndex: 2,
+              inset: 0
+            }}
+          />
           
           {/* Animated Particles */}
           <div className="absolute inset-0 overflow-hidden">
@@ -143,9 +155,9 @@ export default function HeroCarousel() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
+      {/* Responsive Content */}
       <div className="relative z-10 flex items-center justify-center h-full">
-        <div className="text-center max-w-4xl mx-auto px-6 sm:px-8">
+        <div className="text-center max-w-2xl mx-auto px-3 sm:px-8 w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={`content-${currentSlide}`}
@@ -158,29 +170,16 @@ export default function HeroCarousel() {
                 ease: [0.25, 0.46, 0.45, 0.94]
               }}
             >
-              {/* Title with Letter Animation */}
-              <motion.h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight">
-                {slides[currentSlide].title.split('').map((letter, index) => (
-                  <motion.span
-                    key={index}
-                    initial={{ opacity: 0, y: 50, rotateX: -90 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                    transition={{
-                      duration: 0.6,
-                      delay: 0.5 + index * 0.05,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }}
-                    className="inline-block"
-                    style={{ transformOrigin: 'center bottom' }}
-                  >
-                    {letter === ' ' ? '\u00A0' : letter}
-                  </motion.span>
-                ))}
+              {/* Responsive Title */}
+              <motion.h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 sm:mb-4 leading-tight break-words"
+                style={{ wordBreak: 'break-word' }}
+              >
+                {slides[currentSlide].title}
               </motion.h1>
-
-              {/* Subtitle */}
+              
+              {/* Responsive Subtitle */}
               <motion.h2 
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white/90 mb-6"
+                className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white/90 mb-3 sm:mb-6"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
@@ -192,9 +191,9 @@ export default function HeroCarousel() {
                 {slides[currentSlide].subtitle}
               </motion.h2>
 
-              {/* Description */}
+              {/* Responsive Description */}
               <motion.p 
-                className="text-lg sm:text-xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed"
+                className="text-sm xs:text-base sm:text-lg md:text-xl text-white/80 mb-4 sm:mb-8 max-w-xl mx-auto leading-relaxed"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
@@ -208,7 +207,7 @@ export default function HeroCarousel() {
 
               {/* CTA Button */}
               <motion.button
-                className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
+                className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 sm:py-4 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
                 initial={{ opacity: 0, y: 30, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ 
