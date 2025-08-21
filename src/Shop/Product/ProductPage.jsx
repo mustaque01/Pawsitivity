@@ -13,7 +13,14 @@ const ProductPage = () => {
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
     const [isWishlisted, setIsWishlisted] = useState(false);
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(() => {
+        try {
+            const stored = localStorage.getItem("pawsitivity_cart");
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    });
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -38,6 +45,19 @@ const ProductPage = () => {
         if (savedCart) {
             setCart(JSON.parse(savedCart));
         }
+
+        const syncCart = () => {
+            try {
+                const stored = localStorage.getItem("pawsitivity_cart");
+                setCart(stored ? JSON.parse(stored) : []);
+            } catch {
+                setCart([]);
+            }
+        };
+        window.addEventListener("pawsitivity_cart_updated", syncCart);
+        // Also sync on mount in case localStorage changed elsewhere
+        syncCart();
+        return () => window.removeEventListener("pawsitivity_cart_updated", syncCart);
     }, [id]);
 
     const handleAddToCart = () => {
@@ -52,14 +72,15 @@ const ProductPage = () => {
         const updatedCart = [...cart, cartItem];
         setCart(updatedCart);
         localStorage.setItem('pawsitivity_cart', JSON.stringify(updatedCart));
-        
+        // Notify other tabs/pages
+        window.dispatchEvent(new Event("pawsitivity_cart_updated"));
         // Show success notification
         alert(`${product.name} added to cart!`);
     };
 
     const handleBuyNow = () => {
         handleAddToCart();
-        navigate('/checkout');
+        navigate('/address'); // Change from '/checkout' to '/address'
     };
 
     if (loading) {
@@ -90,45 +111,61 @@ const ProductPage = () => {
         );
     }
 
+    // Cart count for icon
+    const cartCount = cart.length;
+
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8 lg:px-8">
                 {/* Breadcrumb */}
-                <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+                <div className="flex flex-wrap items-center space-x-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                     <button onClick={() => navigate('/')} className="hover:text-orange-600">Home</button>
                     <span>/</span>
                     <button onClick={() => navigate('/shop')} className="hover:text-orange-600">Shop</button>
                     <span>/</span>
-                    <span className="text-gray-900">{product.name}</span>
+                    <span className="text-gray-900 truncate max-w-[120px] sm:max-w-xs">{product.name}</span>
                 </div>
 
                 {/* Back Button */}
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 mb-6"
+                    className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 mb-4 sm:mb-6"
                 >
                     <FaArrowLeft />
                     <span>Back to Products</span>
                 </button>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+                {/* Cart Button (always visible, not dependent on login) */}
+                <button
+                    onClick={() => navigate('/cart')}
+                    className="fixed bottom-6 right-6 z-50 bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center w-14 h-14 hover:bg-orange-700 transition"
+                    aria-label="Go to cart"
+                >
+                    <FaShoppingCart className="text-2xl" />
+                    {cartCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow">
+                            {cartCount}
+                        </span>
+                    )}
+                </button>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-10">
                     {/* Product Images */}
                     <div className="space-y-4">
-                        <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg">
+                        <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-md mx-auto">
                             <img
                                 src={product.images ? product.images[selectedImage] : product.image}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        
                         {product.images && product.images.length > 1 && (
-                            <div className="flex space-x-2 overflow-x-auto">
+                            <div className="flex space-x-2 overflow-x-auto justify-center">
                                 {product.images.map((img, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
-                                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                                        className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 ${
                                             selectedImage === index ? 'border-orange-500' : 'border-gray-200'
                                         }`}
                                     >
@@ -142,8 +179,18 @@ const ProductPage = () => {
                     {/* Product Info */}
                     <div className="space-y-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                            <p className="text-gray-600">by {product.author}</p>
+                            <h1
+                                className="font-bold text-gray-900 mb-2 break-words leading-tight"
+                                style={{
+                                    fontSize: '2rem', // force 16px on all screens
+                                    maxWidth: '100%',
+                                    wordBreak: 'break-word',
+                                    lineHeight: '1.3',
+                                }}
+                            >
+                                {product.name}
+                            </h1>
+                            <p className="text-gray-600 text-sm sm:text-base">by {product.author}</p>
                         </div>
 
                         {/* Rating */}
@@ -153,17 +200,17 @@ const ProductPage = () => {
                                     <FaStar key={i} className={`w-5 h-5 ${i < product.rating ? 'text-yellow-400' : 'text-gray-300'}`} />
                                 ))}
                             </div>
-                            <span className="text-gray-600">({product.reviewCount} reviews)</span>
+                            <span className="text-gray-600 text-xs sm:text-sm">({product.reviewCount} reviews)</span>
                         </div>
 
                         {/* Price */}
                         <div className="flex items-center space-x-3">
-                            <span className="text-3xl font-bold text-orange-600">₹{product.price}</span>
+                            <span className="text-2xl sm:text-3xl font-bold text-orange-600">₹{product.price}</span>
                             {product.originalPrice && (
-                                <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
+                                <span className="text-lg sm:text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
                             )}
                             {product.originalPrice && (
-                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs sm:text-sm font-medium">
                                     Save ₹{product.originalPrice - product.price}
                                 </span>
                             )}
@@ -172,17 +219,17 @@ const ProductPage = () => {
                         {/* Stock Status */}
                         <div className="flex items-center space-x-2">
                             <FaCheck className="text-green-500" />
-                            <span className="text-green-600 font-medium">
+                            <span className="text-green-600 font-medium text-sm sm:text-base">
                                 In Stock ({product.stockCount} available)
                             </span>
                         </div>
 
                         {/* Description */}
-                        <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{product.description}</p>
 
                         {/* Quantity Selector */}
                         <div className="flex items-center space-x-4">
-                            <span className="font-medium">Quantity:</span>
+                            <span className="font-medium text-sm sm:text-base">Quantity:</span>
                             <div className="flex items-center border border-gray-300 rounded-lg">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -204,14 +251,14 @@ const ProductPage = () => {
                         <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
+                                className="flex-1 bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
                             >
                                 <FaShoppingCart />
                                 <span>Add to Cart</span>
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="flex-1 bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                                className="flex-1 bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base"
                             >
                                 Buy Now
                             </button>
@@ -227,19 +274,19 @@ const ProductPage = () => {
 
                         {/* Features */}
                         <div className="border-t pt-6">
-                            <h3 className="font-semibold mb-3">Key Features:</h3>
+                            <h3 className="font-semibold mb-3 text-base sm:text-lg">Key Features:</h3>
                             <ul className="space-y-2">
                                 {product.features?.map((feature, index) => (
                                     <li key={index} className="flex items-start space-x-2">
                                         <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                                        <span className="text-gray-700">{feature}</span>
+                                        <span className="text-gray-700 text-sm sm:text-base">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
                         {/* Trust Badges */}
-                        <div className="flex items-center space-x-6 pt-6 border-t">
+                        <div className="flex flex-wrap items-center space-x-6 pt-6 border-t">
                             <div className="flex items-center space-x-2">
                                 <FaTruck className="text-green-500" />
                                 <span className="text-sm text-gray-600">Free Shipping</span>
@@ -253,14 +300,14 @@ const ProductPage = () => {
                 </div>
 
                 {/* Product Details Tabs */}
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden mt-8">
                     <div className="border-b border-gray-200">
-                        <nav className="flex space-x-8 px-6">
+                        <nav className="flex flex-wrap space-x-4 sm:space-x-8 px-2 sm:px-6">
                             {['description', 'specifications', 'reviews'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`py-4 text-sm font-medium border-b-2 ${
+                                    className={`py-3 sm:py-4 text-xs sm:text-sm font-medium border-b-2 ${
                                         activeTab === tab
                                             ? 'border-orange-500 text-orange-600'
                                             : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -272,10 +319,10 @@ const ProductPage = () => {
                         </nav>
                     </div>
 
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                         {activeTab === 'description' && (
                             <div className="space-y-4">
-                                <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{product.description}</p>
                                 {product.benefits && (
                                     <div>
                                         <h4 className="font-semibold mb-2">Benefits:</h4>

@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryProducts, getProductsByCategory } from '../data/products';
+import { FaShoppingCart } from "react-icons/fa";
 
 // Enhanced Star Rating Component with memoization
 const StarRating = React.memo(({ rating, reviewCount }) => (
@@ -118,8 +119,17 @@ const CartNotification = React.memo(({ show }) => {
 // --- Main BestsellersPage Component ---
 export default function BestsellersPage() {
     const [activeCategory, setActiveCategory] = useState('All');
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(() => {
+        // Load cart from localStorage on mount
+        try {
+            const stored = localStorage.getItem("pawsitivity_cart");
+            return stored ? JSON.parse(stored) : [];
+        } catch {
+            return [];
+        }
+    });
     const [showCartNotification, setShowCartNotification] = useState(false);
+    const navigate = useNavigate();
 
     // Memoize categories to prevent re-computation
     const categories = useMemo(() => ['All', ...Object.keys(categoryProducts)], []);
@@ -130,11 +140,32 @@ export default function BestsellersPage() {
         [activeCategory]
     );
 
+    // Sync cart state with localStorage and listen for cart updates
+    useEffect(() => {
+        const syncCart = () => {
+            try {
+                const stored = localStorage.getItem("pawsitivity_cart");
+                setCart(stored ? JSON.parse(stored) : []);
+            } catch {
+                setCart([]);
+            }
+        };
+        window.addEventListener("pawsitivity_cart_updated", syncCart);
+        // Also sync on mount in case localStorage changed elsewhere
+        syncCart();
+        return () => window.removeEventListener("pawsitivity_cart_updated", syncCart);
+    }, []);
+
     // Optimized add to cart handler with useCallback
     const handleAddToCart = useCallback((product) => {
-        setCart(prevCart => [...prevCart, product]);
+        setCart(prevCart => {
+            const updatedCart = [...prevCart, { ...product, quantity: 1, addedAt: new Date().toISOString() }];
+            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
+            // Dispatch custom event so other tabs/pages update their cart
+            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
+            return updatedCart;
+        });
         setShowCartNotification(true);
-        
         // Clear notification after 3 seconds
         const timer = setTimeout(() => setShowCartNotification(false), 3000);
         return () => clearTimeout(timer);
@@ -145,8 +176,25 @@ export default function BestsellersPage() {
         setActiveCategory(category);
     }, []);
 
+    // Cart item count
+    const cartCount = cart.length;
+
     return (
         <div className="min-h-screen font-sans bg-gray-50">
+            {/* Floating Cart Button */}
+            <button
+                onClick={() => navigate('/cart')}
+                className="fixed bottom-6 right-6 z-50 bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center w-14 h-14 hover:bg-orange-700 transition"
+                aria-label="Go to cart"
+            >
+                <FaShoppingCart className="text-2xl" />
+                {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow">
+                        {cartCount}
+                    </span>
+                )}
+            </button>
+
             <CartNotification show={showCartNotification} />
 
             <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:py-8">
@@ -158,11 +206,6 @@ export default function BestsellersPage() {
                     <p className="mt-2 text-sm text-gray-600 sm:text-base">
                         Protecting animals, empowering communities
                     </p>
-                    {cart.length > 0 && (
-                        <div className="inline-flex items-center px-3 py-1 mt-2 text-sm font-semibold text-orange-600 bg-orange-100 rounded-full">
-                            🛒 {cart.length} items in cart
-                        </div>
-                    )}
                 </header>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-8">

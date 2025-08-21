@@ -19,6 +19,9 @@ import ContactUs from './Components/contactus';
 import BestsellersPage from './Shop/BestsellersPage';
 import AboutUs from './Components/Aboutus/Aboutus'
 import ProductPage from './Shop/Product/ProductPage'
+import CartPage from './Shop/CartPage';
+import AddressPage from './Shop/AddressPage';
+import CheckoutPage from './Shop/CheckoutPage';
 
 // Protected route component
 const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
@@ -122,6 +125,36 @@ function MainApp() {
               <>
                 <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
                 <ContactUs />
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/cart" 
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <CartPage />
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/address" 
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <AddressPage />
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/checkout" 
+            element={
+              <>
+                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
+                <CheckoutPage />
                 <Footer />
               </>
             } 
