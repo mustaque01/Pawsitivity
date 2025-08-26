@@ -12,7 +12,7 @@ const initialProducts = [
     category: 'Collars',
     price: 599,
     inventory: 45,
-    image: null, // Placeholder for image file
+    image: '/src/assets/New collars QR code/pawelite multicolor.jpg',
   },
   {
     id: 2,
@@ -20,7 +20,31 @@ const initialProducts = [
     category: 'Collars',
     price: 699,
     inventory: 32,
-    image: null,
+    image: '/src/assets/New collars QR code/pawelite navy blue.jpg',
+  },
+  {
+    id: 3,
+    name: 'Anti-Theft QR Collar - Black',
+    category: 'Collars',
+    price: 899,
+    inventory: 28,
+    image: '/src/assets/New collars QR code/anti theft black.jpg',
+  },
+  {
+    id: 4,
+    name: 'Premium Pawelite Collar - Pink',
+    category: 'Collars',
+    price: 749,
+    inventory: 35,
+    image: '/src/assets/New collars QR code/pawelite pink.jpg',
+  },
+  {
+    id: 5,
+    name: 'Anti-Theft Multi-Color Collar',
+    category: 'Collars',
+    price: 799,
+    inventory: 22,
+    image: '/src/assets/New collars QR code/anit theft multicolor.jpg',
   },
 ];
 
@@ -58,9 +82,9 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 mx-auto mb-4 border-2 border-yellow-600 rounded-full border-t-transparent animate-spin"></div>
           <p>Loading...</p>
         </div>
       </div>
@@ -138,23 +162,23 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-800 to-indigo-900 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4 flex justify-between items-center">
+      <header className="py-6 text-white shadow-lg bg-gradient-to-r from-yellow-600 to-orange-700">
+        <div className="container flex items-center justify-between px-4 mx-auto">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/')}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              className="p-2 transition-colors rounded-full bg-white/10 hover:bg-white/20"
             >
               <FaArrowLeft />
             </button>
             <div>
               <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="text-purple-200">Welcome back, {user?.firstName || 'Admin'}</p>
+              <p className="text-yellow-200">Welcome back, {user?.firstName || 'Admin'}</p>
             </div>
           </div>
           <button
             onClick={logout}
-            className="bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+            className="px-4 py-2 font-medium text-white transition-colors rounded-lg bg-white/10 hover:bg-white/20"
           >
             Sign Out
           </button>
@@ -162,13 +186,13 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         {/* Tabs */}
-        <div className="mb-8 flex border-b border-gray-200">
+        <div className="flex mb-8 border-b border-gray-200">
           <button
             className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'products'
-              ? 'text-purple-700 border-b-2 border-purple-700'
-              : 'text-gray-500 hover:text-purple-700'
+              ? 'text-yellow-700 border-b-2 border-yellow-700'
+              : 'text-gray-500 hover:text-yellow-700'
               }`}
             onClick={() => setCurrentTab('products')}
           >
@@ -176,8 +200,8 @@ export default function AdminDashboard() {
           </button>
           <button
             className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'orders'
-              ? 'text-purple-700 border-b-2 border-purple-700'
-              : 'text-gray-500 hover:text-purple-700'
+              ? 'text-yellow-700 border-b-2 border-yellow-700'
+              : 'text-gray-500 hover:text-yellow-700'
               }`}
             onClick={() => setCurrentTab('orders')}
           >
@@ -185,8 +209,8 @@ export default function AdminDashboard() {
           </button>
           <button
             className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'customers'
-              ? 'text-purple-700 border-b-2 border-purple-700'
-              : 'text-gray-500 hover:text-purple-700'
+              ? 'text-yellow-700 border-b-2 border-yellow-700'
+              : 'text-gray-500 hover:text-yellow-700'
               }`}
             onClick={() => setCurrentTab('customers')}
           >
@@ -194,8 +218,8 @@ export default function AdminDashboard() {
           </button>
           <button
             className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'analytics'
-              ? 'text-purple-700 border-b-2 border-purple-700'
-              : 'text-gray-500 hover:text-purple-700'
+              ? 'text-yellow-700 border-b-2 border-yellow-700'
+              : 'text-gray-500 hover:text-yellow-700'
               }`}
             onClick={() => setCurrentTab('analytics')}
           >
@@ -206,22 +230,22 @@ export default function AdminDashboard() {
         {/* Products Tab Content */}
         {currentTab === 'products' && (
           <div>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-800">Product Management</h2>
               <div className="flex space-x-3">
                 <div className="relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <FaSearch className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
                   <input
                     type="text"
                     placeholder="Search products..."
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
                 <button
                   onClick={handleAddProduct}
-                  className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-yellow-600 rounded-lg hover:bg-yellow-700"
                 >
                   <FaPlus />
                   <span>Add Product</span>
@@ -230,23 +254,23 @@ export default function AdminDashboard() {
             </div>
 
             {/* Products Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-hidden bg-white rounded-lg shadow-md">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                       Product
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                       Category
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                       Price
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                       Inventory
                     </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
                       Actions
                     </th>
                   </tr>
@@ -256,15 +280,15 @@ export default function AdminDashboard() {
                     <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
+                          <div className="w-10 h-10 overflow-hidden bg-gray-100 rounded-full">
                             {product.image ? (
                               <img
                                 src={product.image}
                                 alt={product.name}
-                                className="h-full w-full object-cover"
+                                className="object-cover w-full h-full"
                               />
                             ) : (
-                              <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500">
+                              <div className="flex items-center justify-center w-full h-full text-gray-500 bg-gray-200">
                                 No Image
                               </div>
                             )}
@@ -283,10 +307,10 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{product.inventory}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                         <button
                           onClick={() => handleEditProduct(product)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                          className="mr-4 text-indigo-600 hover:text-indigo-900"
                         >
                           <FaEdit />
                         </button>
@@ -301,7 +325,7 @@ export default function AdminDashboard() {
                   ))}
                   {filteredProducts.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="5" className="px-6 py-4 text-sm text-center text-gray-500">
                         No products found
                       </td>
                     </tr>
@@ -314,22 +338,22 @@ export default function AdminDashboard() {
 
         {/* Other tabs */}
         {currentTab === 'orders' && (
-          <div className="bg-white p-6 rounded-lg shadow-md text-center py-16">
-            <h3 className="text-xl font-medium text-gray-700 mb-2">Orders Dashboard Coming Soon</h3>
+          <div className="p-6 py-16 text-center bg-white rounded-lg shadow-md">
+            <h3 className="mb-2 text-xl font-medium text-gray-700">Orders Dashboard Coming Soon</h3>
             <p className="text-gray-500">This feature is currently under development.</p>
           </div>
         )}
 
         {currentTab === 'customers' && (
-          <div className="bg-white p-6 rounded-lg shadow-md text-center py-16">
-            <h3 className="text-xl font-medium text-gray-700 mb-2">Customer Management Coming Soon</h3>
+          <div className="p-6 py-16 text-center bg-white rounded-lg shadow-md">
+            <h3 className="mb-2 text-xl font-medium text-gray-700">Customer Management Coming Soon</h3>
             <p className="text-gray-500">This feature is currently under development.</p>
           </div>
         )}
 
         {currentTab === 'analytics' && (
-          <div className="bg-white p-6 rounded-lg shadow-md text-center py-16">
-            <h3 className="text-xl font-medium text-gray-700 mb-2">Analytics Dashboard Coming Soon</h3>
+          <div className="p-6 py-16 text-center bg-white rounded-lg shadow-md">
+            <h3 className="mb-2 text-xl font-medium text-gray-700">Analytics Dashboard Coming Soon</h3>
             <p className="text-gray-500">This feature is currently under development.</p>
           </div>
         )}
@@ -341,7 +365,7 @@ export default function AdminDashboard() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -349,7 +373,7 @@ export default function AdminDashboard() {
             className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   {selectedProduct.id ? 'Edit Product' : 'Add New Product'}
                 </h3>
@@ -363,7 +387,7 @@ export default function AdminDashboard() {
 
               <form onSubmit={handleSaveProduct} className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="name" className="block mb-1 text-sm font-medium text-gray-700">
                     Product Name
                   </label>
                   <input
@@ -372,13 +396,13 @@ export default function AdminDashboard() {
                     name="name"
                     value={selectedProduct.name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="category" className="block mb-1 text-sm font-medium text-gray-700">
                     Category
                   </label>
                   <select
@@ -386,7 +410,7 @@ export default function AdminDashboard() {
                     name="category"
                     value={selectedProduct.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     required
                   >
                     <option value="" disabled>Select a category</option>
@@ -400,7 +424,7 @@ export default function AdminDashboard() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="price" className="block mb-1 text-sm font-medium text-gray-700">
                       Price (₹)
                     </label>
                     <input
@@ -411,12 +435,12 @@ export default function AdminDashboard() {
                       step="0.01"
                       value={selectedProduct.price}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="inventory" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="inventory" className="block mb-1 text-sm font-medium text-gray-700">
                       Inventory
                     </label>
                     <input
@@ -426,14 +450,14 @@ export default function AdminDashboard() {
                       min="0"
                       value={selectedProduct.inventory}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="image" className="block mb-1 text-sm font-medium text-gray-700">
                     Upload Image
                   </label>
                   <input
@@ -442,30 +466,30 @@ export default function AdminDashboard() {
                     name="image"
                     accept="image/*"
                     onChange={handleImageUpload}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   />
                   {selectedProduct.image && (
                     <div className="mt-2">
                       <img
                         src={selectedProduct.image}
                         alt="Product preview"
-                        className="h-24 w-auto object-contain border rounded"
+                        className="object-contain w-auto h-24 border rounded"
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="flex space-x-3 pt-4">
+                <div className="flex pt-4 space-x-3">
                   <button
                     type="button"
                     onClick={() => setIsFormOpen(false)}
-                    className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-yellow-600 border border-transparent rounded-md shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
                     Save Product
                   </button>
