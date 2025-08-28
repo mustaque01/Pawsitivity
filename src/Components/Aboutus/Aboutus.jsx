@@ -6,6 +6,11 @@ import marqueeImage2 from './assets/marquee2.jpg';
 import marqueeImage3 from './assets/marquee3.jpg';
 import marqueeImage4 from './assets/marquee4.jpg';
 import marqueeImage5 from './assets/marquee5.jpg';
+import qrcollor from './icons/qrcollor.png';
+// Import other icon images
+import womenEmpowerment from './icons/womenEmpowerment.png';
+import communityOutreach from './icons/communityOutreach.png';
+import analytics from './icons/analytics.png';
 
 // Use imported images directly
 const marqueeImages = [
@@ -16,8 +21,8 @@ const marqueeImages = [
     marqueeImage5
 ];
 
-// Optimized Service Card with improved visuals and responsiveness
-const ServiceCard = React.memo(({ step, title, description, icon, index, isVisible }) => {
+// Optimized Service Card with image icons instead of emojis
+const ServiceCard = React.memo(({title, description, icon, index, isVisible }) => {
     return (
         <article
             className={`group bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col items-center px-6 py-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
@@ -25,13 +30,15 @@ const ServiceCard = React.memo(({ step, title, description, icon, index, isVisib
             }`}
             style={{ transitionDelay: `${index * 50}ms` }}
         >
-            <div className="flex items-center justify-center w-14 h-14 mb-4 text-3xl bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-sm">
-                <span role="img" aria-label={`Step ${step}`}>{icon}</span>
+            <div className="flex items-center justify-center w-14 h-14 mb-4 bg-gradient-to-br from-amber-200 to-amber-300 rounded-xl shadow-sm p-2">
+                <img 
+                    src={icon} 
+                    alt={title} 
+                    className="w-10 h-10 object-contain rounded-lg"
+                    loading="lazy"
+                />
             </div>
             <div className="text-center flex-1 flex flex-col">
-                <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
-                    Step {step}
-                </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
                 <p className="text-sm text-gray-600">{description}</p>
             </div>
@@ -60,8 +67,7 @@ const ServicesSection = React.memo(({ services }) => {
         <section className="space-y-12" aria-labelledby="services-heading">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
                 {services.map((s, index) => (
-                    <ServiceCard 
-                        key={s.step} 
+                    <ServiceCard
                         {...s} 
                         index={index} 
                         isVisible={visibleCards.includes(index)}
@@ -73,9 +79,9 @@ const ServicesSection = React.memo(({ services }) => {
                 visibleCards.length === 4 ? 'opacity-100' : 'opacity-0'
             }`}>
                 <div className="inline-flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></span>
+                    <span className="w-12 h-px bg-gradient-to-r from-transparent to-amber-400"></span>
                     <span className="font-medium">Our integrated approach to creating positive impact</span>
-                    <span className="w-12 h-px bg-gradient-to-l from-transparent to-blue-400"></span>
+                    <span className="w-12 h-px bg-gradient-to-l from-transparent to-amber-400"></span>
                 </div>
             </div>
         </section>
@@ -86,7 +92,7 @@ const ServicesSection = React.memo(({ services }) => {
 const TeamMemberCard = React.memo(({ name, title, description, imageUrl }) => (
     <article className="group p-6 text-center transition-all bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1">
         <img
-            className="object-cover w-20 h-20 mx-auto mb-4 rounded-full border-4 border-gray-100 group-hover:border-blue-200 transition-all"
+            className="object-cover w-20 h-20 mx-auto mb-4 rounded-full border-4 border-gray-100 group-hover:border-amber-200 transition-all"
             src={imageUrl}
             alt={`${name}, ${title}`}
             loading="lazy"
@@ -98,7 +104,7 @@ const TeamMemberCard = React.memo(({ name, title, description, imageUrl }) => (
             }}
         />
         <h3 className="text-base font-bold text-gray-900 mb-1">{name}</h3>
-        <p className="text-sm font-semibold text-blue-600 mb-2">{title}</p>
+        <p className="text-sm font-semibold text-amber-600 mb-2">{title}</p>
         <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
     </article>
 ));
@@ -121,31 +127,27 @@ const MarqueeLoading = () => (
 );
 
 export default function AboutUs() {
-    // Memoize static data
+    // Memoize static data with image icons
     const services = useMemo(() => [
         {
-            step: 1,
             title: "QR-Enabled Reflective Collars",
             description: "Advanced reflective QR collars that provide identification and enhance visibility of stray animals during nighttime, significantly reducing traffic accidents.",
-            icon: "🔗"
+            icon: qrcollor
         },
         {
-            step: 2,
             title: "Women Empowerment Training",
             description: "Comprehensive skill development programs and professional training for underprivileged women, fostering financial independence and sustainable livelihoods.",
-            icon: "👩‍💼"
+            icon: womenEmpowerment
         },
         {
-            step: 3,
             title: "Community Outreach Programs",
             description: "Strategic community engagement initiatives that educate stakeholders and facilitate widespread distribution of protective collars for maximum impact.",
-            icon: "🤝"
+            icon: communityOutreach
         },
         {
-            step: 4,
             title: "Impact Measurement & Analytics",
             description: "Data-driven monitoring systems that track environmental impact, measure program effectiveness, and ensure sustainable practices across all operations.",
-            icon: "📊"
+            icon: analytics
         }
     ], []);
 
@@ -179,10 +181,10 @@ export default function AboutUs() {
     return (
         <>
             {/* Hero Section - improved */}
-            <div className="relative bg-gradient-to-br from-pink-300 via-pink-50 to-pink-200 pb-12">
+            <div className="relative bg-gradient-to-br from-amber-200 via-pink-50 to-amber-200 pb-12">
                 {/* Reduced background elements for better performance */}
-                <div className="absolute top-20 left-10 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-20"></div>
-                <div className="absolute bottom-20 right-10 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-15"></div>
+                <div className="absolute top-20 left-10 w-32 h-32 bg-amber-100 rounded-full blur-3xl opacity-20"></div>
+                <div className="absolute bottom-20 right-10 w-48 h-48 bg-amber-200 rounded-full blur-3xl opacity-15"></div>
 
                 <header className="relative px-4 pt-12 pb-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="text-center">
@@ -199,8 +201,8 @@ export default function AboutUs() {
                 <section className="relative px-2 sm:px-4 mx-auto max-w-7xl">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                         {services.map((s, index) => (
-                            <ServiceCard 
-                                key={s.step} 
+                            <ServiceCard  
+                                key={s.title || index} // Ensure unique key
                                 {...s} 
                                 index={index} 
                                 isVisible={true}
@@ -272,10 +274,10 @@ export default function AboutUs() {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 lg:p-12 mb-16">
+                        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-2xl p-8 lg:p-12 mb-16">
                             <div className="max-w-4xl mx-auto text-center">
-                                <h3 className="text-2xl font-bold text-blue-900 mb-6">Strategic Growth Initiatives</h3>
-                                <div className="grid md:grid-cols-2 gap-8 text-blue-800">
+                                <h3 className="text-2xl font-bold text-amber-900 mb-6">Strategic Growth Initiatives</h3>
+                                <div className="grid md:grid-cols-2 gap-8 text-amber-800">
                                     <div>
                                         <p className="mb-4">
                                             We're expanding our impact through large-scale deployment programs, corporate social responsibility partnerships, and comprehensive awareness campaigns that integrate animal welfare with sustainable development goals.

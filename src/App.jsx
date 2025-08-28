@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import './App.css'
 import Navbar from './Components/Navbar'
 import HeroCarousel from './Components/HeroCarousel'
@@ -62,134 +62,135 @@ const HomePage = () => {
   );
 };
 
-function MainApp() {
+function AppContent() {
+  const location = useLocation();
   const { isLoggedIn, userType, logout, loading } = useAuth();
-  
-  const handleLogout = () => {
-    logout();
-  };
+
+  // Check if we're on admin routes
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
+    <div className="App">
+      {/* Only show main navbar for non-admin routes */}
+      {!isAdminRoute && (
+        <Navbar 
+          isLoggedIn={isLoggedIn} 
+          userType={userType}
+          onLogout={logout}
+        />
+      )}
+      <Routes>
+        {/* Auth routes with no navbar or footer */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Regular routes with navbar and footer */}
+        <Route 
+          path="/" 
+          element={
+            <>
+              <HomePage />
+              <Footer />
+            </>
+          } 
+        />
+        <Route 
+          path="/shop"
+          element={
+            <>
+              <BestsellersPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/product/:id" 
+          element={
+            <>
+              <ProductPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/about" 
+          element={
+            <>
+              <AboutUs />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/contact" 
+          element={
+            <>
+              <ContactUs /> 
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/cart" 
+          element={
+            <>
+              <CartPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/address" 
+          element={
+            <>
+              <AddressPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/checkout" 
+          element={
+            <>
+              <CheckoutPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute 
+              isLoggedIn={isLoggedIn} 
+              userType={userType} 
+              requiredUserType="admin" 
+              loading={loading}
+            >
+              <AdminDashboard />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
+  );
+}
+
+function MainApp() {
+  return (
     <Router>
-      <div className="app">
-        <Routes>
-          {/* Auth routes with no navbar or footer */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          
-          {/* Regular routes with navbar and footer */}
-          <Route 
-            path="/" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <HomePage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/shop" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <BestsellersPage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/product/:id" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <ProductPage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/about" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <AboutUs />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/contact" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <ContactUs />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/cart" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <CartPage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/address" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <AddressPage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/checkout" 
-            element={
-              <>
-                <Navbar isLoggedIn={isLoggedIn} userType={userType} onLogout={handleLogout} />
-                <CheckoutPage />
-                <Footer />
-              </>
-            } 
-          />
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <ProtectedRoute 
-                isLoggedIn={isLoggedIn} 
-                userType={userType} 
-                requiredUserType="admin" 
-                loading={loading}
-              >
-                <Navbar 
-                  isLoggedIn={isLoggedIn} 
-                  userType={userType} 
-                  onLogout={handleLogout}
-                />
-                <AdminDashboard />
-                <Footer />
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
-  )
+  );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
-  )
+    <MainApp />
+  );
 }
 
-export default App
+export default App;
