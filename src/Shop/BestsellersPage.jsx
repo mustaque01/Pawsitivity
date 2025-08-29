@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { categoryProducts, getProductsByCategory } from '../data/products';
-import { FaShoppingCart } from "react-icons/fa";
+import { getAllProducts, getProductById } from '../Apis/auth'; // Import both API functions
+import { FaShoppingCart, FaTimes, FaStar } from "react-icons/fa";
 
 // Enhanced Star Rating Component with memoization
 const StarRating = React.memo(({ rating, reviewCount }) => (
@@ -19,15 +19,32 @@ const StarRating = React.memo(({ rating, reviewCount }) => (
 ));
 
 // Optimized Product Card with sleeker buttons
-const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, onRemoveFromCart }) => {
+const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, onRemoveFromCart, onViewDetails }) => {
     const navigate = useNavigate();
 
-    const cartItem = cart.find(item => item.id === product.id);
+    // Handle different ID formats (id vs _id)
+    const productId = product._id || product.id;
+    const cartItem = cart.find(item => (item._id || item.id) === productId);
     const isInCart = !!cartItem;
 
+    // Map backend product data to display format
+    const productName = product.product || product.name || product.title;
+    const productPrice = product.discountedPrice || product.price;
+    const originalPrice = product.price;
+    const productImage = product.image?.[0]?.url || product.image?.[0] || '/api/placeholder/300/300';
+    const productRating = product.rating || 0;
+    const productReviewCount = product.noOfReviews || 0;
+    const productCategory = product.category || 'Pet Products';
+    const productDiscount = product.discount || 0;
+
     const handleProductClick = useCallback(() => {
-        navigate(`/product/${product.id}`);
-    }, [navigate, product.id]);
+        navigate(`/product/${productId}`);
+    }, [navigate, productId]);
+
+    const handleViewDetails = useCallback((e) => {
+        e.stopPropagation();
+        onViewDetails(productId);
+    }, [onViewDetails, productId]);
 
     const handleAddToCartClick = useCallback((e) => {
         e.stopPropagation();
@@ -40,26 +57,36 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
     const handleDecrease = (e) => {
         e.stopPropagation();
         if (cartItem.quantity > 1) {
-            onQuantityChange(product.id, cartItem.quantity - 1);
+            onQuantityChange(productId, cartItem.quantity - 1);
         } else {
-            onRemoveFromCart(product.id);
+            onRemoveFromCart(productId);
         }
     };
 
     // Quantity controls for products already in cart
     return (
         <article className="relative p-4 transition-all duration-200 bg-white border rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1">
+            {/* Discount Badge */}
+            {productDiscount > 0 && (
+                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold z-10">
+                    {productDiscount}% OFF
+                </div>
+            )}
+
             {/* Product Image */}
             <div className="mb-4 cursor-pointer" onClick={handleProductClick}>
                 <img 
-                    src={product.image} 
-                    alt={product.name}
+                    src={productImage} 
+                    alt={productName}
                     loading="lazy"
                     decoding="async"
                     width="300"
                     height="300"
                     className="object-cover w-full h-48 rounded-lg sm:h-56 lg:h-64" 
                     style={{ aspectRatio: '1/1' }}
+                    onError={(e) => {
+                        e.target.src = '/api/placeholder/300/300';
+                    }}
                 />
             </div>
             
@@ -69,24 +96,32 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
                     className="text-sm font-semibold text-gray-800 cursor-pointer sm:text-base hover:text-orange-700 line-clamp-2 min-h-[2.5rem]"
                     onClick={handleProductClick}
                 >
-                    {product.name}
+                    {productName}
                 </h3>
-                <p className="text-xs text-gray-500 sm:text-sm">by {product.author}</p>
-                <StarRating rating={product.rating} reviewCount={product.reviewCount} />
+                <p className="text-xs text-gray-500 sm:text-sm">{productCategory}</p>
+                <StarRating rating={productRating} reviewCount={productReviewCount} />
+                
+                {/* Price Section */}
                 <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-700 sm:text-sm">{product.format}</span>
+                    <div className="flex flex-col">
+                        <span className="text-base font-bold text-red-700 sm:text-lg">₹{productPrice}</span>
+                        {originalPrice > productPrice && (
+                            <span className="text-xs text-gray-500 line-through">₹{originalPrice}</span>
+                        )}
+                    </div>
                 </div>
+                
                 {/* Sleek Buttons */}
                 <div className="flex items-center justify-between mt-2 gap-2">
-                    <span className="text-base font-bold text-red-700 sm:text-lg">₹{product.price}.00</span>
+                    <button
+                        onClick={handleViewDetails}
+                        className="px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-all duration-150 shadow-sm"
+                        aria-label={`View details for ${productName}`}
+                    >
+                        Details
+                    </button>
+                    
                     <div className="flex gap-1 items-center">
-                        <button
-                            onClick={handleProductClick}
-                            className="px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-all duration-150 shadow-sm"
-                            aria-label={`View details for ${product.name}`}
-                        >
-                            View
-                        </button>
                         {isInCart ? (
                             <div className="flex items-center gap-1">
                                 <button
@@ -98,7 +133,7 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
                                 <button
                                     onClick={e => {
                                         e.stopPropagation();
-                                        onQuantityChange(product.id, cartItem.quantity + 1);
+                                        onQuantityChange(productId, cartItem.quantity + 1);
                                     }}
                                     className="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 text-xs"
                                     aria-label="Increase quantity"
@@ -108,7 +143,7 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
                             <button
                                 onClick={handleAddToCartClick}
                                 className="px-3 py-1 text-xs font-medium rounded-md border transition-all duration-150 shadow-sm bg-orange-500 text-white hover:bg-orange-600 border-orange-500"
-                                aria-label={`Add ${product.name} to cart`}
+                                aria-label={`Add ${productName} to cart`}
                             >
                                 <FaShoppingCart className="inline-block mr-1 -mt-0.5" /> Cart
                             </button>
@@ -165,9 +200,263 @@ const CartNotification = React.memo(({ show, onViewCart }) => {
     );
 });
 
+// Loading component
+const LoadingSpinner = () => (
+    <div className="flex items-center justify-center py-12">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+);
+
+// Error component
+const ErrorMessage = ({ message, onRetry }) => (
+    <div className="text-center py-12">
+        <p className="text-red-600 mb-4">{message}</p>
+        <button
+            onClick={onRetry}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+        >
+            Try Again
+        </button>
+    </div>
+);
+
+// Product Details Modal Component
+const ProductDetailsModal = ({ isOpen, onClose, productId, onAddToCart }) => {
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                const response = await getProductById(productId);
+                
+                if (response.success) {
+                    setProduct(response.product);
+                } else {
+                    setError(response.message || 'Failed to load product details');
+                }
+            } catch (err) {
+                setError('Something went wrong while loading product details');
+                console.error('Product details loading error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isOpen && productId) {
+            fetchProductDetails();
+        }
+    }, [isOpen, productId]);
+
+    const retryFetchProductDetails = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await getProductById(productId);
+            
+            if (response.success) {
+                setProduct(response.product);
+            } else {
+                setError(response.message || 'Failed to load product details');
+            }
+        } catch (err) {
+            setError('Something went wrong while loading product details');
+            console.error('Product details loading error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddToCart = () => {
+        if (product) {
+            onAddToCart({ ...product, quantity });
+            onClose();
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Modal Header */}
+                <div className="flex justify-between items-center p-4 border-b">
+                    <h2 className="text-xl font-bold text-gray-900">Product Details</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                        aria-label="Close modal"
+                    >
+                        <FaTimes className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12">
+                            <p className="text-red-600 mb-4">{error}</p>
+                            <button
+                                onClick={retryFetchProductDetails}
+                                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    ) : product ? (
+                        <div className="space-y-6">
+                            {/* Product Image */}
+                            <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg max-w-md mx-auto">
+                                <img
+                                    src={product.image?.[0]?.url || product.image?.[0] || '/api/placeholder/400/400'}
+                                    alt={product.product || product.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = '/api/placeholder/400/400';
+                                    }}
+                                />
+                            </div>
+
+                            {/* Product Info */}
+                            <div className="text-center space-y-4">
+                                <h3 className="text-2xl font-bold text-gray-900">
+                                    {product.product || product.name || product.title}
+                                </h3>
+                                
+                                <p className="text-gray-600">
+                                    {product.detail || product.description}
+                                </p>
+
+                                {/* Rating */}
+                                <div className="flex items-center justify-center space-x-2">
+                                    <div className="flex items-center">
+                                        {[...Array(5)].map((_, i) => (
+                                            <FaStar
+                                                key={i}
+                                                className={`w-5 h-5 ${
+                                                    i < Math.floor(product.rating || 0)
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span className="text-gray-600 text-sm">
+                                        ({product.rating || 0}/5) • {product.noOfReviews || 0} reviews
+                                    </span>
+                                </div>
+
+                                {/* Price */}
+                                <div className="flex items-center justify-center space-x-3">
+                                    <span className="text-3xl font-bold text-orange-600">
+                                        ₹{product.discountedPrice || product.price}
+                                    </span>
+                                    {product.price > (product.discountedPrice || product.price) && (
+                                        <>
+                                            <span className="text-xl text-gray-500 line-through">
+                                                ₹{product.price}
+                                            </span>
+                                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                                                {product.discount}% OFF
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Category and Stock */}
+                                <div className="flex justify-center space-x-6 text-sm text-gray-600">
+                                    <span>Category: {product.category}</span>
+                                    <span>Stock: {product.quantity || product.stock} available</span>
+                                </div>
+
+                                {/* Display features if available */}
+                                {product.features && product.features.length > 0 && (
+                                    <div className="bg-blue-50 p-3 rounded-lg text-left">
+                                        <h4 className="font-semibold text-blue-800 mb-2">Key Features:</h4>
+                                        <ul className="space-y-1">
+                                            {product.features.slice(0, 3).map((feature, index) => (
+                                                <li key={index} className="flex items-start space-x-2 text-xs">
+                                                    <span className="text-blue-600 mt-1">•</span>
+                                                    <span className="text-blue-700">{feature}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Display tags if available */}
+                                {product.tags && product.tags.length > 0 && (
+                                    <div>
+                                        <div className="flex flex-wrap gap-1 justify-center">
+                                            {product.tags.slice(0, 4).map((tag, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs"
+                                                >
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quantity Selector */}
+                                <div className="flex items-center justify-center space-x-4">
+                                    <span className="font-medium">Quantity:</span>
+                                    <div className="flex items-center border border-gray-300 rounded-lg">
+                                        <button
+                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                            className="px-3 py-2 hover:bg-gray-100"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                                        <button
+                                            onClick={() => setQuantity(Math.min(product.quantity || 10, quantity + 1))}
+                                            className="px-3 py-2 hover:bg-gray-100"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Add to Cart Button */}
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="w-full bg-orange-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
+                                >
+                                    <FaShoppingCart />
+                                    <span>Add to Cart</span>
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500">Product not found</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Main BestsellersPage Component ---
 export default function BestsellersPage() {
     const [activeCategory, setActiveCategory] = useState('All');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [cart, setCart] = useState(() => {
         // Load cart from localStorage on mount
         try {
@@ -178,18 +467,51 @@ export default function BestsellersPage() {
         }
     });
     const [showCartNotification, setShowCartNotification] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const notificationTimeout = useRef(null);
 
     const navigate = useNavigate();
 
-    // Memoize categories to prevent re-computation
-    const categories = useMemo(() => ['All', ...Object.keys(categoryProducts)], []);
+    // Fetch products from backend
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                const response = await getAllProducts();
+                
+                if (response.success) {
+                    setProducts(response.products || response.data || []);
+                } else {
+                    setError(response.message || 'Failed to load products');
+                }
+            } catch (err) {
+                setError('Something went wrong while loading products');
+                console.error('Products loading error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Memoize displayed products
-    const displayedProducts = useMemo(() => 
-        getProductsByCategory(activeCategory), 
-        [activeCategory]
-    );
+        fetchProducts();
+    }, []);
+
+    // Get unique categories from products
+    const categories = useMemo(() => {
+        if (!products.length) return ['All'];
+        const uniqueCategories = [...new Set(products.map(product => product.category).filter(Boolean))];
+        return ['All', ...uniqueCategories];
+    }, [products]);
+
+    // Filter products by category
+    const displayedProducts = useMemo(() => {
+        if (activeCategory === 'All') {
+            return products;
+        }
+        return products.filter(product => product.category === activeCategory);
+    }, [products, activeCategory]);
 
     // Sync cart state with localStorage and listen for cart updates
     useEffect(() => {
@@ -210,7 +532,8 @@ export default function BestsellersPage() {
     // Optimized add to cart handler with useCallback
     const handleAddToCart = useCallback((product) => {
         setCart(prevCart => {
-            if (prevCart.some(item => item.id === product.id)) return prevCart;
+            const productId = product._id || product.id;
+            if (prevCart.some(item => (item._id || item.id) === productId)) return prevCart;
             const updatedCart = [...prevCart, { ...product, quantity: 1, addedAt: new Date().toISOString() }];
             localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
             window.dispatchEvent(new Event("pawsitivity_cart_updated"));
@@ -230,11 +553,12 @@ export default function BestsellersPage() {
     // Add quantity change handler for cart items
     const handleQuantityChange = useCallback((productId, newQuantity) => {
         setCart(prevCart => {
-            const updatedCart = prevCart.map(item =>
-                item.id === productId
+            const updatedCart = prevCart.map(item => {
+                const itemId = item._id || item.id;
+                return itemId === productId
                     ? { ...item, quantity: Math.max(1, newQuantity) }
-                    : item
-            );
+                    : item;
+            });
             localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
             window.dispatchEvent(new Event("pawsitivity_cart_updated"));
             return updatedCart;
@@ -244,7 +568,10 @@ export default function BestsellersPage() {
     // Remove product from cart by id
     const handleRemoveFromCart = useCallback((productId) => {
         setCart(prevCart => {
-            const updatedCart = prevCart.filter(item => item.id !== productId);
+            const updatedCart = prevCart.filter(item => {
+                const itemId = item._id || item.id;
+                return itemId !== productId;
+            });
             localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
             window.dispatchEvent(new Event("pawsitivity_cart_updated"));
             return updatedCart;
@@ -257,8 +584,40 @@ export default function BestsellersPage() {
         navigate('/cart');
     }, [navigate]);
 
+    // Retry function for error state
+    const handleRetry = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await getAllProducts();
+            
+            if (response.success) {
+                setProducts(response.products || response.data || []);
+            } else {
+                setError(response.message || 'Failed to load products');
+            }
+        } catch (err) {
+            setError('Something went wrong while loading products');
+            console.error('Products loading error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     // Cart item count
     const cartCount = cart.length;
+
+    // Modal handlers
+    const handleOpenModal = useCallback((productId) => {
+        setSelectedProductId(productId);
+        setIsModalOpen(true);
+    }, []);
+
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+        setSelectedProductId(null);
+    }, []);
 
     return (
         <div className="min-h-screen font-sans bg-gray-50">
@@ -311,7 +670,7 @@ export default function BestsellersPage() {
                                         >
                                             {category}
                                             <span className="float-right text-xs opacity-75">
-                                                ({category === 'All' ? Object.values(categoryProducts).flat().length : categoryProducts[category]?.length || 0})
+                                                ({category === 'All' ? products.length : products.filter(p => p.category === category).length})
                                             </span>
                                         </button>
                                     </li>
@@ -331,26 +690,37 @@ export default function BestsellersPage() {
                         {/* Category Header */}
                         <div className="mb-6">
                             <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                                Bestsellers in {activeCategory}
+                                {activeCategory === 'All' ? 'All Products' : `${activeCategory} Products`}
                             </h2>
                             <p className="mt-1 text-sm text-gray-600">
-                                {displayedProducts.length} products available
+                                {loading ? 'Loading...' : `${displayedProducts.length} products available`}
                             </p>
                         </div>
 
-                        {/* Optimized Products Grid */}
-                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-2 xl:grid-cols-3 sm:gap-6" role="list">
-                            {displayedProducts.map(product => (
-                                <ProductCard 
-                                    key={product.id} 
-                                    product={product} 
-                                    onAddToCart={handleAddToCart}
-                                    cart={cart}
-                                    onQuantityChange={handleQuantityChange}
-                                    onRemoveFromCart={handleRemoveFromCart}
-                                />
-                            ))}
-                        </div>
+                        {/* Loading, Error, or Products Grid */}
+                        {loading ? (
+                            <LoadingSpinner />
+                        ) : error ? (
+                            <ErrorMessage message={error} onRetry={handleRetry} />
+                        ) : displayedProducts.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-500">No products found in this category.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3 lg:grid-cols-2 xl:grid-cols-3 sm:gap-6" role="list">
+                                {displayedProducts.map(product => (
+                                    <ProductCard 
+                                        key={product._id || product.id} 
+                                        product={product} 
+                                        onAddToCart={handleAddToCart}
+                                        cart={cart}
+                                        onQuantityChange={handleQuantityChange}
+                                        onRemoveFromCart={handleRemoveFromCart}
+                                        onViewDetails={handleOpenModal}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </section>
                 </div>
             </main>
@@ -365,6 +735,14 @@ export default function BestsellersPage() {
                     </div>
                 </div>
             </footer>
+
+            {/* Product Details Modal */}
+            <ProductDetailsModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                productId={selectedProductId}
+                onAddToCart={handleAddToCart}
+            />
         </div>
     );
 }
