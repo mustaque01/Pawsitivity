@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaUser, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-
+import { login as loginAPI } from '../../Apis/auth';
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -32,17 +32,24 @@ export default function Login() {
     e.preventDefault();
     if (!validateForm()) return;
     setIsLoading(true);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const isValidUser = formData.email === 'user@pawsitivity.com' && formData.password === 'user123';
-      if (isValidUser) {
-        login({ email: formData.email, userType: 'user', isAuthenticated: true });
-        navigate('/');
+      // Call backend API
+      const res = await loginAPI(formData);
+
+      if (res.success) {
+        login({
+          email: res.user.email,
+          userType: res.user.userType || "user",
+          isAuthenticated: true,
+        });
+
+        navigate("/");
       } else {
-        setErrors({ submit: 'Invalid credentials. Please try again.' });
+        setErrors({ submit: res.message || "Invalid credentials" });
       }
-    } catch {
-      setErrors({ submit: 'Login failed. Please try again.' });
+    } catch (err) {
+      setErrors({ submit: "Login failed. Please try again." });
     } finally {
       setIsLoading(false);
     }
