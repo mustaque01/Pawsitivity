@@ -97,66 +97,37 @@ export const submitContact = async (contactData) => {
   }
 };
 
-// Create a separate instance for products API
-const PRODUCTS_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/products",
-  
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Add axios interceptor to include token in requests for products API
-PRODUCTS_API_URL.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Get all products
-export const getAllProducts = async () => {
+// get all user list by admin
+export const getAllUsersByAdmin = async () => {
   try {
-    const response = await PRODUCTS_API_URL.get('/allProducts');
-    
+    const response = await API_URL.get('/admin/all-users');
     return {
       success: true,
-      data: response.data,
-      products: response.data.products || response.data,
-      message: 'Products fetched successfully'
+      data: response.data
     };
   } catch (error) {
-    console.error("Get All Products API Error:", error.response?.data || error.message);
+    console.error("Get All Users API Error:", error.response?.data || error.message);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to fetch products',
+      message: error.response?.data?.message || 'Failed to retrieve users',
       error: error.message
     };
   }
 };
-
-// Get product by ID
-export const getProductById = async (productId) => {
+// change user role by admin
+export const changeUserRoleByAdmin = async (userId, newRole) => {
   try {
-    const response = await PRODUCTS_API_URL.get(`/${productId}`);
-    
+    const response = await API_URL.put(`/admin/change/role/${userId}`, { role: newRole });
     return {
       success: true,
-      data: response.data,
-      product: response.data.product || response.data,
-      message: 'Product fetched successfully'
+      message: 'User role updated successfully',
+      data: response.data
     };
   } catch (error) {
-    console.error("Get Product By ID API Error:", error.response?.data || error.message);
+    console.error("Change User Role API Error:", error.response?.data || error.message);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to fetch product',
+      message: error.response?.data?.message || 'Failed to update user role',
       error: error.message
     };
   }

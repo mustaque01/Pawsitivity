@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAllProducts, getProductById } from '../Apis/auth'; // Import both API functions
+import { getAllProducts, getProductById } from '../Apis/product_api'; // Import both API functions
 import { FaShoppingCart, FaTimes, FaStar } from "react-icons/fa";
 
 // Enhanced Star Rating Component with memoization

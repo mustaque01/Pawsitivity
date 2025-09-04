@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 // import { motion } from "framer-motion";
+import { getProductById } from "../../Apis/product_api";
 import {
   FaShoppingCart,
   FaHeart,
@@ -11,7 +12,6 @@ import {
   FaLock,
   FaArrowLeft,
 } from "react-icons/fa";
-import { getProductById } from "../../Apis/auth"; // Updated import
 
 const ProductPage = () => {
   const { id } = useParams();
