@@ -71,6 +71,32 @@ export const logout = () => {
 };
 
 
+// contact us api
+const CONTACT_API_URL = axios.create({
+  baseURL: "http://localhost:8000/api/v1/contact",
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+export const submitContact = async (contactData) => {
+  try {
+    const response = await CONTACT_API_URL.post('/submit', contactData);
+
+    return {
+      success: true,
+      message: 'Contact form submitted successfully',
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Submit Contact API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to submit contact form',
+      error: error.message
+    };
+  }
+};
+
 // Create a separate instance for products API
 const PRODUCTS_API_URL = axios.create({
   baseURL: "http://localhost:8000/api/v1/products",

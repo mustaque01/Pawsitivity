@@ -428,74 +428,56 @@ const ProductPage = () => {
                         </ul>
                       </div>
                     )}
-                    {product.benefits && product.benefits.length > 0 && (
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <h4 className="font-semibold text-green-800 mb-2">Benefits:</h4>
-                        <ul className="space-y-1">
-                          {product.benefits.map((benefit, index) => (
-                            <li key={index} className="flex items-start space-x-2 text-sm">
-                              <FaCheck className="text-green-600 mt-1 flex-shrink-0" />
-                              <span className="text-green-700">{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
                   </div>
                 )}
                 {activeTab === "specifications" && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="font-medium text-gray-700">
-                          Category:
-                        </span>
-                        <span className="text-gray-600">{productCategory}</span>
+                    {/* Display specifications as array */}
+                    {product.specifications && product.specifications.length > 0 ? (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-800 mb-3">Product Specifications:</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          {product.specifications.map((spec, index) => (
+                            <div key={index} className="flex items-start space-x-2 py-2 px-3 bg-gray-50 rounded-lg">
+                              <FaCheck className="text-green-600 mt-1 flex-shrink-0" />
+                              <span className="text-gray-700 text-sm">{spec}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="font-medium text-gray-700">
-                          Stock:
-                        </span>
-                        <span className="text-gray-600">
-                          {productStock} units
-                        </span>
+                    ) : (
+                      <div className="text-center py-6">
+                        <p className="text-gray-500">No specifications available for this product.</p>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="font-medium text-gray-700">
-                          Discount:
-                        </span>
-                        <span className="text-gray-600">
-                          {productDiscount}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-gray-100">
-                        <span className="font-medium text-gray-700">
-                          Rating:
-                        </span>
-                        <span className="text-gray-600">{productRating}/5</span>
-                      </div>
-                      {/* Display custom specifications from backend */}
-                      {product.specifications && Object.keys(product.specifications).length > 0 && 
-                        Object.entries(product.specifications).map(([key, value]) => (
-                          <div key={key} className="flex justify-between py-2 border-b border-gray-100">
-                            <span className="font-medium text-gray-700">{key}:</span>
-                            <span className="text-gray-600">{value}</span>
-                          </div>
-                        ))
-                      }
-                    </div>
+                    )}
+
                     {/* Display tags if available */}
-                    {product.tags && product.tags.length > 0 && (
-                      <div className="mt-4">
+                    {/* {product.tags && product.tags.length > 0 && (
+                      <div className="mt-6 pt-4 border-t border-gray-200">
                         <h4 className="font-semibold text-gray-700 mb-2">Tags:</h4>
                         <div className="flex flex-wrap gap-2">
                           {product.tags.map((tag, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
                             >
-                              #{tag}
+                              #{tag.replace('#', '')}
                             </span>
+                          ))}
+                        </div>
+                      </div>
+                    )} */}
+
+                    {/* Display benefits if available */}
+                    {product.benefits && product.benefits.length > 0 && (
+                      <div className="mt-6 pt-4 border-t border-gray-200">
+                        <h4 className="font-semibold text-gray-700 mb-3">Benefits:</h4>
+                        <div className="space-y-2">
+                          {product.benefits.map((benefit, index) => (
+                            <div key={index} className="flex items-start space-x-2">
+                              <FaCheck className="text-green-600 mt-1 flex-shrink-0" />
+                              <span className="text-gray-700 text-sm">{benefit}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
