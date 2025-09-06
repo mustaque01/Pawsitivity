@@ -57,7 +57,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
           alt="Pawsitivity Logo" 
           className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity duration-200"
           onClick={handleLogoClick}
-          loading="eager" // Logo should load immediately
+          loading="eager" 
         />
 
         {/* Hamburger */}
@@ -72,63 +72,62 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
         
         {/* Login/User Button */}
         <div className="user-menu-container relative">
-          {isLoggedIn ? (
-            <div className="flex items-center">
+            {isLoggedIn ? (
+              <div className="flex items-center">
+                <motion.button
+                  onClick={handleUserMenuToggle}
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 px-4 rounded-full transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaUserCircle className="text-lg" />
+                  <span className="font-medium">{userType === 'admin' ? 'Admin' : 'My Account'}</span>
+                </motion.button>
+                {isUserMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
+                  >
+                    <div className="p-3 border-b border-gray-100 text-sm font-medium text-gray-600">
+                      {userType === 'admin' ? 'Admin Panel' : 'My Account'}
+                    </div>
+                    <ul className="py-2">
+                      {userType === 'admin' && (
+                        <li 
+                          className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer"
+                          onClick={handleDashboardClick}
+                        >
+                          Dashboard
+                        </li>
+                      )}
+                      <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
+                        My Orders
+                      </li>
+                      <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
+                        Settings
+                      </li>
+                      <li 
+                        onClick={onLogout}
+                        className="px-4 py-2 hover:bg-red-50 text-red-600 text-sm cursor-pointer flex items-center gap-2"
+                      >
+                        <FaSignOutAlt /> Sign Out
+                      </li>
+                    </ul>
+                  </motion.div>
+                )}
+              </div>
+            ) : (
               <motion.button
-                onClick={handleUserMenuToggle}
-                className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 px-4 rounded-full transition-all"
+                onClick={handleLoginClick}
+                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2 px-6 rounded-full font-medium shadow-md hover:shadow-lg transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <FaUserCircle className="text-lg" />
-                <span className="font-medium">{userType === 'admin' ? 'Admin' : 'My Account'}</span>
+                Login
               </motion.button>
-              
-              {isUserMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
-                >
-                  <div className="p-3 border-b border-gray-100 text-sm font-medium text-gray-600">
-                    {userType === 'admin' ? 'Admin Panel' : 'My Account'}
-                  </div>
-                  <ul className="py-2">
-                    {userType === 'admin' && (
-                      <li 
-                        className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer"
-                        onClick={handleDashboardClick}
-                      >
-                        Dashboard
-                      </li>
-                    )}
-                    <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
-                      My Orders
-                    </li>
-                    <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
-                      Settings
-                    </li>
-                    <li 
-                      onClick={onLogout}
-                      className="px-4 py-2 hover:bg-red-50 text-red-600 text-sm cursor-pointer flex items-center gap-2"
-                    >
-                      <FaSignOutAlt /> Sign Out
-                    </li>
-                  </ul>
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <motion.button
-              onClick={handleLoginClick}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2 px-6 rounded-full font-medium shadow-md hover:shadow-lg transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Login
-            </motion.button>
-          )}
+            )}
         </div>
       </div>
 
@@ -179,19 +178,26 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
             >
               <Link to="/contact">Contact</Link>
             </motion.li>
-            <motion.li 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              onClick={isLoggedIn ? undefined : handleLoginClick}
-              className="px-6 py-3 text-pink-600 font-medium hover:bg-pink-50 cursor-pointer transition-all duration-200 border-b-0"
-            >
               {isLoggedIn ? (
-                <span>My Account</span>
+                <motion.li 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="px-6 py-3 text-pink-600 font-medium hover:bg-pink-50 cursor-pointer transition-all duration-200 border-b-0"
+                >
+                  <span>My Account</span>
+                </motion.li>
               ) : (
-                <span>Login / Sign Up</span>
+                <motion.li 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  onClick={handleLoginClick}
+                  className="px-6 py-3 text-pink-600 font-medium hover:bg-pink-50 cursor-pointer transition-all duration-200 border-b-0"
+                >
+                  Login
+                </motion.li>
               )}
-            </motion.li>
           </motion.ul>
         </motion.div>
       )}

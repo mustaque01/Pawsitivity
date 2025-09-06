@@ -1,8 +1,8 @@
+import { useAuth } from './AuthContext';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaGoogle, FaFacebook } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
 import { signup } from '../../Apis/auth'; 
 
 export default function Signup() {
@@ -92,15 +92,8 @@ export default function Signup() {
       });
 
       if (result.success) {
-        // ✅ Save user in AuthContext
-        login({
-          email: result.user.email,
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          userType: result.user.role || 'user',
-          isAuthenticated: true
-        });
-
+        // Use context login for instant UI update
+        login({ ...result.user, userType: result.user.role || 'user' });
         navigate('/'); // redirect on success
       } else {
         setErrors({ submit: result.message });

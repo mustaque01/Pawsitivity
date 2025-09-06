@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('pawsitivity_user');
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
         });
       } catch (error) {
         console.error('Error loading user data:', error);
-        localStorage.removeItem('pawsitivity_user');
+        localStorage.removeItem('user');
         setAuthState((prevState) => ({
           ...prevState,
           loading: false, // Ensure loading is false even if there's an error
@@ -49,9 +49,9 @@ export function AuthProvider({ children }) {
       ...userData,
       isAuthenticated: true,
     };
-    
-    localStorage.setItem('pawsitivity_user', JSON.stringify(userWithAuth));
-    
+
+    localStorage.setItem('user', JSON.stringify(userWithAuth));
+
     setAuthState({
       isLoggedIn: true,
       userType: userData.userType,
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
 
   // Logout function
   const logout = () => {
-    localStorage.removeItem('pawsitivity_user');
+    localStorage.removeItem('user');
 
     setAuthState({
       isLoggedIn: false,

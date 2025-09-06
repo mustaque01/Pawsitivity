@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AdminProduct from "../Admin/AdminProduct";
-import { getAllUsersByAdmin } from "../../Apis/auth";
+import { getAllUsersByAdmin, getUserDetailByAdmin } from "../../Apis/auth";
 import axios from "axios";
 
 // Initial categories
@@ -50,19 +50,14 @@ export default function AdminDashboard() {
   // Fetch user details by ID
   const handleGetDetails = async (userId) => {
     setDetailsLoading(true);
-    setDetailsError(null);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `http://localhost:8000/api/v1/users/admin/users/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSelectedUser(response.data.user);
+    const result = await getUserDetailByAdmin(userId);
+    if (result.success) {
+      setSelectedUser(result.data.user);
+      setDetailsError(null);
       setDetailsModalOpen(true);
-    } catch (error) {
-      setDetailsError(error.response?.data?.message || 'Failed to fetch user details');
+    } else {
+      setDetailsError(result.message);
     }
-    setDetailsLoading(false);
   };
 
   // Delete user by ID

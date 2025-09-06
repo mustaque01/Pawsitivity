@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaUser, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
 import { login as loginAPI } from '../../Apis/auth';
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -10,7 +9,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,12 +36,8 @@ export default function Login() {
       const res = await loginAPI(formData);
 
       if (res.success) {
-        login({
-          email: res.user.email,
-          userType: res.user.userType || "user",
-          isAuthenticated: true,
-        });
-
+        // Store full user object in localStorage
+        localStorage.setItem('user', JSON.stringify({ ...res.user, isAuthenticated: true }));
         navigate("/");
       } else {
         setErrors({ submit: res.message || "Invalid credentials" });
