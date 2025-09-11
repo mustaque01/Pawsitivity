@@ -7,18 +7,21 @@ import { Link, useNavigate } from 'react-router-dom';
 
 // Memoized navigation links to prevent re-renders
 const NavigationLinks = React.memo(() => (
-    <ul className="hidden md:flex gap-6 text-gray-700 font-semibold">
-        <li className="hover:text-pink-500 cursor-pointer">
+    <ul className="hidden gap-6 font-semibold text-gray-700 md:flex">
+        <li className="cursor-pointer hover:text-pink-500">
             <Link to="/">Home</Link>
         </li>
-        <li className="hover:text-pink-500 cursor-pointer">
+        <li className="cursor-pointer hover:text-pink-500">
             <Link to="/shop">Shop</Link>
         </li>
-        <li className="hover:text-pink-500 cursor-pointer">
+        <li className="cursor-pointer hover:text-pink-500">
             <Link to="/about">About Us</Link>
         </li>
-        <li className="hover:text-pink-500 cursor-pointer">
+        <li className="cursor-pointer hover:text-pink-500">
             <Link to="/contact">Contact</Link>
+        </li>
+        <li className="cursor-pointer hover:text-pink-500">
+            <Link to="/media">Media</Link>
         </li>
     </ul>
 ));
@@ -50,12 +53,12 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
   const handleDashboardClick = useCallback(() => navigate('/admin/dashboard'), [navigate]);
 
   return (
-    <nav className="bg-black backdrop-blur-sm shadow-md z-50 relative">
-      <div className="flex justify-between items-center bg-white px-6 py-1 ">
+    <nav className="relative z-50 bg-black shadow-md backdrop-blur-sm">
+      <div className="flex items-center justify-between px-6 py-1 bg-white ">
         <img 
           src={logoImage} 
           alt="Pawsitivity Logo" 
-          className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity duration-200"
+          className="w-auto h-16 transition-opacity duration-200 cursor-pointer hover:opacity-80"
           onClick={handleLogoClick}
           loading="eager" 
         />
@@ -71,12 +74,12 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
         <NavigationLinks />
         
         {/* Login/User Button */}
-        <div className="user-menu-container relative">
+        <div className="relative user-menu-container">
             {isLoggedIn ? (
               <div className="flex items-center">
                 <motion.button
                   onClick={handleUserMenuToggle}
-                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 px-4 rounded-full transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-white transition-all rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -88,29 +91,29 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
+                    className="absolute right-0 z-50 w-48 mt-2 overflow-hidden bg-white rounded-lg shadow-xl top-full"
                   >
-                    <div className="p-3 border-b border-gray-100 text-sm font-medium text-gray-600">
+                    <div className="p-3 text-sm font-medium text-gray-600 border-b border-gray-100">
                       {userType === 'admin' ? 'Admin Panel' : 'My Account'}
                     </div>
                     <ul className="py-2">
                       {userType === 'admin' && (
                         <li 
-                          className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer"
+                          className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50"
                           onClick={handleDashboardClick}
                         >
                           Dashboard
                         </li>
                       )}
-                      <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
+                      <li className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
                         My Orders
                       </li>
-                      <li className="px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm cursor-pointer">
+                      <li className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
                         Settings
                       </li>
                       <li 
                         onClick={onLogout}
-                        className="px-4 py-2 hover:bg-red-50 text-red-600 text-sm cursor-pointer flex items-center gap-2"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 cursor-pointer hover:bg-red-50"
                       >
                         <FaSignOutAlt /> Sign Out
                       </li>
@@ -121,7 +124,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
             ) : (
               <motion.button
                 onClick={handleLoginClick}
-                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2 px-6 rounded-full font-medium shadow-md hover:shadow-lg transition-all"
+                className="px-6 py-2 font-medium text-white transition-all rounded-full shadow-md bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 hover:shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -138,7 +141,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="md:hidden absolute top-full left-0 right-0 mt-2 bg-white/98 rounded-lg shadow-lg overflow-hidden z-50"
+          className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-lg shadow-lg md:hidden top-full bg-white/98"
         >
           <motion.ul
             initial={{ y: -20 }}
@@ -150,7 +153,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0 }}
-              className="px-6 py-3 text-gray-700 font-medium hover:bg-white hover:text-pink-500 cursor-pointer transition-all duration-200 border-b border-pink-100"
+              className="px-6 py-3 font-medium text-gray-700 transition-all duration-200 border-b border-pink-100 cursor-pointer hover:bg-white hover:text-pink-500"
             >
               <Link to="/">Home</Link>
             </motion.li>
@@ -158,7 +161,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="px-6 py-3 text-gray-700 font-medium hover:bg-white hover:text-pink-500 cursor-pointer transition-all duration-200 border-b border-pink-100"
+              className="px-6 py-3 font-medium text-gray-700 transition-all duration-200 border-b border-pink-100 cursor-pointer hover:bg-white hover:text-pink-500"
             >
               <Link to="/shop">Shop</Link>
             </motion.li>
@@ -166,7 +169,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="px-6 py-3 text-gray-700 font-medium hover:bg-white hover:text-pink-500 cursor-pointer transition-all duration-200 border-b border-pink-100"
+              className="px-6 py-3 font-medium text-gray-700 transition-all duration-200 border-b border-pink-100 cursor-pointer hover:bg-white hover:text-pink-500"
             >
               <Link to="/about">About Us</Link>
             </motion.li>
@@ -174,7 +177,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="px-6 py-3 text-gray-700 font-medium hover:bg-white hover:text-pink-500 cursor-pointer transition-all duration-200 border-b border-pink-100"
+              className="px-6 py-3 font-medium text-gray-700 transition-all duration-200 border-b border-pink-100 cursor-pointer hover:bg-white hover:text-pink-500"
             >
               <Link to="/contact">Contact</Link>
             </motion.li>
@@ -183,7 +186,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="px-6 py-3 text-pink-600 font-medium hover:bg-pink-50 cursor-pointer transition-all duration-200 border-b-0"
+                  className="px-6 py-3 font-medium text-pink-600 transition-all duration-200 border-b-0 cursor-pointer hover:bg-pink-50"
                 >
                   <span>My Account</span>
                 </motion.li>
@@ -193,7 +196,7 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
                   onClick={handleLoginClick}
-                  className="px-6 py-3 text-pink-600 font-medium hover:bg-pink-50 cursor-pointer transition-all duration-200 border-b-0"
+                  className="px-6 py-3 font-medium text-pink-600 transition-all duration-200 border-b-0 cursor-pointer hover:bg-pink-50"
                 >
                   Login
                 </motion.li>

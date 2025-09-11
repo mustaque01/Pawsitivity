@@ -15,6 +15,7 @@ import { AuthProvider, useAuth } from './Components/Auth/AuthContext'
 import AdminDashboard from './Components/Admin/AdminDashboard'
 import EmpoweringSection from './empowering section/EmpoweringSection'
 import ContactUs from './Components/contactus';
+import MediaPage from './Components/MediaPage';
 import BestsellersPage from './Shop/BestsellersPage';
 import AboutUs from './Components/Aboutus/Aboutus'
 import ProductPage from './Shop/Product/ProductPage'
@@ -28,9 +29,9 @@ import Order from './Shop/OrderPage'
 const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 mx-auto mb-4 border-2 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
           <p>Loading...</p>
         </div>
       </div>
@@ -128,6 +129,15 @@ function AppContent() {
           element={
             <>
               <ContactUs /> 
+              <Footer />
+            </>
+          }
+        />
+        <Route 
+          path="/media" 
+          element={
+            <>
+              <MediaPage /> 
               <Footer />
             </>
           }
