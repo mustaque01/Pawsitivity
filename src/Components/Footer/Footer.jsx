@@ -20,10 +20,12 @@ const Footer = () => {
           
           {/* Terms and Policies section */}
           <div className="footer-bottom-policies">
-            <span>TERMS AND CONDITIONS</span>
-            <span>PRIVACY POLICY</span>
-            <span>COOKIE POLICY</span>
-            <span>ACCESSIBILITY STATEMENT</span>
+            <span>Privacy POLICY</span>
+            <span>Terms & Conditions</span>
+            <span>Cancellation Policy</span>
+            <span>Refund Policy</span>
+            <span>Shipping Policy</span>
+            <span>Pricing Policy</span>
           </div>
           
           <div className="footer-bottom-links">
