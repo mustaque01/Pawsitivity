@@ -90,21 +90,21 @@ const OfferSlider = () => {
                     style={{ transform: `translateX(-${currentIndex * 100}%)` }}
                 >
                     {slides.map((slide, index) => (
-                        <div key={index} className={`flex-shrink-0 w-full h-[160px] flex items-center justify-between px-6 sm:px-10 text-white ${slide.bgColor}`}>
+                        <div key={index} className={`flex-shrink-0 w-full h-[90px] flex items-center justify-between px-3 sm:px-6 text-white ${slide.bgColor}`}>
                             {/* --- Text Content --- */}
                             <div className="z-10 w-1/2">
-                                <h2 className="text-xl sm:text-2xl font-extrabold mb-1">{slide.title}</h2>
-                                <p className="text-xs sm:text-sm mb-3">{slide.subtitle}</p>
+                                <h2 className="mb-1 text-base font-bold sm:text-lg">{slide.title}</h2>
+                                <p className="mb-1 text-xs sm:text-xs">{slide.subtitle}</p>
                                 <a 
                                     href={slide.buttonLink}
-                                    className="bg-white text-gray-900 font-bold py-1 px-4 rounded-md text-xs sm:text-sm hover:bg-gray-200 transition-colors"
+                                    className="inline-block px-2 py-0.5 text-xs font-semibold text-gray-900 transition-colors bg-white rounded-sm hover:bg-gray-200"
                                 >
                                     {slide.buttonText}
                                 </a>
                             </div>
                             {/* --- Image Content --- */}
-                            <div className="w-1/2 flex items-center justify-center">
-                               <img src={slide.imageUrl} alt={slide.title} className="max-h-[120px] object-contain"/>
+                            <div className="flex items-center justify-center w-1/2">
+                               <img src={slide.imageUrl} alt={slide.title} className="max-h-[60px] object-contain"/>
                             </div>
                         </div>
                     ))}
@@ -113,28 +113,28 @@ const OfferSlider = () => {
                 {/* --- Navigation Arrows --- */}
                 <button 
                     onClick={prevSlide}
-                    className="absolute top-1/2 left-3 transform -translate-y-1/2 bg-black/20 text-white p-2 rounded-full hover:bg-black/40 transition-colors"
+                    className="absolute p-1 text-white transition-colors transform -translate-y-1/2 rounded-full top-1/2 left-1 bg-black/20 hover:bg-black/40"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <button 
                     onClick={nextSlide}
-                    className="absolute top-1/2 right-3 transform -translate-y-1/2 bg-black/20 text-white p-2 rounded-full hover:bg-black/40 transition-colors"
+                    className="absolute p-1 text-white transition-colors transform -translate-y-1/2 rounded-full top-1/2 right-1 bg-black/20 hover:bg-black/40"
                 >
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
 
                 {/* --- Navigation Dots --- */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+                <div className="absolute flex space-x-1.5 -translate-x-1/2 bottom-1.5 left-1/2">
                     {slides.map((_, index) => (
                         <button 
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className={`w-2 h-2 rounded-full transition-colors ${currentIndex === index ? 'bg-white' : 'bg-white/50'}`}
+                            className={`w-1 h-1 rounded-full transition-colors ${currentIndex === index ? 'bg-white' : 'bg-white/50'}`}
                         />
                     ))}
                 </div>
