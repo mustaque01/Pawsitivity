@@ -73,7 +73,12 @@ export const getProductById = async (productId) => {
 // Create a new product (admin only)
 export const createProduct = async (productData) => {
   try {
-    const response = await PRODUCTS_API_URL.post('/create-product', productData);
+    let config = {};
+    // If productData is FormData, set multipart header
+    if (productData instanceof FormData) {
+      config.headers = { 'Content-Type': 'multipart/form-data' };
+    }
+    const response = await PRODUCTS_API_URL.post('/create-product', productData, config);
     return {
       success: true,
       data: response.data,

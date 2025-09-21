@@ -9,6 +9,7 @@ import {
   createProduct,
   updateProduct,
 } from "../../Apis/product_api";
+import { Feather } from "lucide-react";
 
 export default function AdminProduct() {
   const { user, isLoggedIn, loading } = useAuth();
@@ -62,11 +63,22 @@ export default function AdminProduct() {
       detail: "",
       category: "",
       price: 0,
+      discount: 0,
       quantity: 0,
-      image: [],
+      promotion: {
+        startDate: null,
+        endDate: null,
+        discountPercentage: 0,
+      },
+      stock: 0,
+      primaryImage: null,
+      secondaryImages: [],
       isActive: true,
       rating: 0,
       noOfReviews: 0,
+      tags: [],
+      features: [],
+      specifications: [],
     });
     setSelectedImages([]);
     setImagePreviewUrls([]);
@@ -99,31 +111,43 @@ export default function AdminProduct() {
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
-    
     try {
       const formData = new FormData();
-      
-      // Add product data
+      // Add product data according to the product model
       formData.append('product', selectedProduct.product);
       formData.append('detail', selectedProduct.detail);
       formData.append('category', selectedProduct.category);
       formData.append('price', selectedProduct.price);
       formData.append('quantity', selectedProduct.quantity);
-      
-      // Add new images if any
-      selectedImages.forEach((image) => {
-        formData.append('images', image);
-      });
-
+      formData.append('isActive', selectedProduct.isActive);
+      formData.append('rating', selectedProduct.rating);
+      formData.append('noOfReviews', selectedProduct.noOfReviews);
+      // Add tags, features, specifications as arrays (not JSON strings)
+      if (selectedProduct.tags && selectedProduct.tags.length > 0) {
+        selectedProduct.tags.forEach(tag => formData.append('tags', tag));
+      }
+      if (selectedProduct.features && selectedProduct.features.length > 0) {
+        selectedProduct.features.forEach(f => formData.append('features', f));
+      }
+      if (selectedProduct.specifications && selectedProduct.specifications.length > 0) {
+        selectedProduct.specifications.forEach(s => formData.append('specifications', s));
+      }
+      // Add images: first is primary, rest are secondary
+      if (selectedImages.length === 0) {
+        alert('At least one image is required.');
+        return;
+      }
+      formData.append('primaryImage', selectedImages[0]);
+      for (let i = 1; i < selectedImages.length; i++) {
+        formData.append('secondaryImages', selectedImages[i]);
+      }
       let result;
       const isEditing = selectedProduct._id;
-      
       if (isEditing) {
         result = await updateProduct(selectedProduct._id, formData);
       } else {
         result = await createProduct(formData);
       }
-
       if (result.success) {
         await fetchProductsFromBackend();
         alert(isEditing ? 'Product updated successfully!' : 'Product created successfully!');
@@ -244,9 +268,9 @@ export default function AdminProduct() {
                 >
                   <div className="flex items-start space-x-3 mb-3">
                     <div className="w-16 h-16 overflow-hidden bg-gray-100 rounded-lg border border-gray-200 flex-shrink-0">
-                      {product.image && product.image.length > 0 ? (
+                      {product.primaryImage ? (
                         <img
-                          src={product.image[0].url}
+                          src={product.primaryImage.url || product.primaryImage}
                           alt={product.product}
                           className="object-cover w-full h-full"
                         />
@@ -366,9 +390,9 @@ export default function AdminProduct() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-12 h-12 overflow-hidden bg-gray-100 rounded-lg border border-gray-200 flex-shrink-0">
-                            {product.image && product.image.length > 0 ? (
+                            {product.primaryImage ? (
                               <img
-                                src={product.image[0].url}
+                                src={product.primaryImage.url || product.primaryImage}
                                 alt={product.product}
                                 className="object-cover w-full h-full"
                               />
@@ -457,7 +481,7 @@ export default function AdminProduct() {
         </>
       )}
 
-      {/* Product Form Modal */}
+      {/* Add new product form */}
       {isFormOpen && selectedProduct && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -499,7 +523,7 @@ export default function AdminProduct() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Category *</label>
                     <select
@@ -518,7 +542,7 @@ export default function AdminProduct() {
                       <option value="Trackers">Trackers</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Price (₹) *</label>
                     <input
@@ -532,7 +556,38 @@ export default function AdminProduct() {
                       required
                     />
                   </div>
-                  
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Discount (%)</label>
+                    <input
+                      type="number"
+                      name="discount"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={selectedProduct.discount}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Promotion</label>
+                    <select
+                      name="promotion"
+                      value={selectedProduct.promotion || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    >
+                      <option value="">None</option>
+                      <option value="BOGO">Buy One Get One</option>
+                      <option value="FLASH_SALE">Flash Sale</option>
+                      <option value="SEASONAL">Seasonal</option>
+                      <option value="CLEARANCE">Clearance</option>
+                    </select>
+                  </div>
+
                   <div className="sm:col-span-2">
                     <label className="block mb-2 text-sm font-medium text-gray-700">Quantity *</label>
                     <input
@@ -563,7 +618,7 @@ export default function AdminProduct() {
                 {/* Image Upload */}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Product Images</label>
-                  
+                  <div className="mb-2 text-xs text-gray-500">First image will be used as <b>Primary Image</b>. Others will be <b>Secondary Images</b>.</div>
                   {/* Image Upload Area */}
                   <div className="mb-4">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-yellow-300 border-dashed rounded-lg cursor-pointer bg-yellow-50 hover:bg-yellow-100">
@@ -583,8 +638,7 @@ export default function AdminProduct() {
                       />
                     </label>
                   </div>
-
-                  {/* Image Previews */}
+                  {/* Image Previews with Primary/Secondary labels */}
                   {imagePreviewUrls.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                       {imagePreviewUrls.map((url, index) => (
@@ -594,6 +648,7 @@ export default function AdminProduct() {
                             alt={`Preview ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg border border-gray-300"
                           />
+                          <span className={`absolute top-1 left-1 px-2 py-0.5 text-xs rounded bg-black/70 text-white ${index === 0 ? 'font-bold' : ''}`}>{index === 0 ? 'Primary' : 'Secondary'}</span>
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
@@ -623,6 +678,55 @@ export default function AdminProduct() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Tags, Features, Specifications */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {/* Tags */}
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      name="tags"
+                      value={selectedProduct.tags ? selectedProduct.tags.join(', ') : ''}
+                      onChange={e => setSelectedProduct({
+                        ...selectedProduct,
+                        tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      placeholder="e.g. eco-friendly, durable, waterproof"
+                    />
+                  </div>
+                  {/* Features */}
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Features (comma separated)</label>
+                    <input
+                      type="text"
+                      name="features"
+                      value={selectedProduct.features ? selectedProduct.features.join(', ') : ''}
+                      onChange={e => setSelectedProduct({
+                        ...selectedProduct,
+                        features: e.target.value.split(',').map(f => f.trim()).filter(Boolean)
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      placeholder="e.g. lightweight, washable, adjustable"
+                    />
+                  </div>
+                  {/* Specifications */}
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Specifications (comma separated)</label>
+                    <input
+                      type="text"
+                      name="specifications"
+                      value={selectedProduct.specifications ? selectedProduct.specifications.join(', ') : ''}
+                      onChange={e => setSelectedProduct({
+                        ...selectedProduct,
+                        specifications: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      placeholder="e.g. size: M, color: red, material: nylon"
+                    />
+                  </div>
                 </div>
 
                 {/* Form Actions */}
