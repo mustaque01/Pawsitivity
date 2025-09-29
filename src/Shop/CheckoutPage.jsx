@@ -1,10 +1,11 @@
-// src/pages/CheckoutPage.jsx
-import axios from "axios";
+// src/Shop/CheckoutPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAddresses } from "../Apis/auth";
 import { useCart } from "../Context/CartContext";
 import { createOrder as createAppOrder } from "../Apis/product_api";
+import { initiatePayment, verifyPayment } from "../Apis/payment";
+import { ENDPOINTS } from "../config/api.config";
 
 // Razorpay script loader
 const loadRazorpayScript = () => {
@@ -26,10 +27,12 @@ const loadRazorpayScript = () => {
 };
 
 export default function CheckoutPage() {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
+  const [addresses, setAddresses] = useState([]);
   const [address, setAddress] = useState(null);
   const [addressLoading, setAddressLoading] = useState(true);
   const [addressError, setAddressError] = useState(null);
+  const [showAddressSelector, setShowAddressSelector] = useState(false);
   const navigate = useNavigate();
 
   // Local UI states
@@ -41,20 +44,28 @@ export default function CheckoutPage() {
     if (userId) {
       getAddresses(userId).then((result) => {
         if (result.success && result.data.addresses && result.data.addresses.length > 0) {
-          setAddress(result.data.addresses[result.data.addresses.length - 1]);
+          // Save all addresses
+          setAddresses(result.data.addresses);
+          
+          // Set default or first address
+          const defaultAddress = result.data.addresses.find(addr => addr.isDefault);
+          setAddress(defaultAddress || result.data.addresses[0]);
           setAddressError(null);
         } else {
           setAddress(null);
+          setAddresses([]);
           setAddressError("No address found.");
         }
         setAddressLoading(false);
-      }).catch(err => {
+      }).catch(() => {
         setAddress(null);
+        setAddresses([]);
         setAddressError("Failed to load addresses.");
         setAddressLoading(false);
       });
     } else {
       setAddress(null);
+      setAddresses([]);
       setAddressError("User not logged in.");
       setAddressLoading(false);
     }
@@ -93,6 +104,16 @@ export default function CheckoutPage() {
     setOrderLoading(true);
 
     try {
+      // Import logging utilities
+      const logger = await import('../utils/logger.js');
+      
+      // Log checkout attempt
+      logger.info("Checkout initiated", { 
+        cartItems: cart.length,
+        totalAmount: total,
+        addressId: address._id
+      });
+      
       // Load Razorpay script first
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
@@ -100,9 +121,17 @@ export default function CheckoutPage() {
       }
 
       // 1) Create Razorpay Order (server-side) with better error handling
-      const backendCreateOrderUrl = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/create-order`;
+      logger.logApiRequest('POST', ENDPOINTS.PAYMENT.INITIATE, { 
+        amount: total,
+        currency: 'INR' 
+      });
       
-      const rzResp = await axios.post(backendCreateOrderUrl, { 
+      console.log('Payment initiation endpoint:', ENDPOINTS.PAYMENT.INITIATE);
+      console.log('Payment amount:', total);
+      console.log('User ID:', JSON.parse(localStorage.getItem("user"))?._id);
+      
+      // Using the payment utility function instead of direct axios call
+      const paymentResponse = await initiatePayment({
         amount: total,
         currency: 'INR',
         receipt: `order_${Date.now()}`,
@@ -110,23 +139,35 @@ export default function CheckoutPage() {
           userId: JSON.parse(localStorage.getItem("user"))?._id,
           items: cart.length
         }
-      }, {
-        timeout: 10000, // 10 second timeout
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: false
+      });
+      
+      console.log('Razorpay response:', paymentResponse);
+      
+      // Handle both response formats: paymentResponse.data.data (nested) or paymentResponse.data (direct)
+      const rzOrder = paymentResponse.data?.order || paymentResponse.data?.data || paymentResponse.data;
+      
+      console.log('Extracted Razorpay order:', rzOrder);
+      
+      // Log successful order creation
+      logger.logPayment('order-created', { 
+        orderId: rzOrder?.id,
+        amount: rzOrder?.amount
       });
 
-      const rzOrder = rzResp.data;
-
       if (!rzOrder || !rzOrder.id) {
-        throw new Error("Failed to create Razorpay order.");
+        throw new Error("Failed to create Razorpay order. Response structure: " + JSON.stringify(paymentResponse));
       }
 
       // 2) Open Razorpay Checkout
+      const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      console.log('Razorpay Key ID:', razorpayKeyId);
+      
+      if (!razorpayKeyId) {
+        throw new Error("Razorpay Key ID not found. Please check your environment configuration.");
+      }
+      
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         order_id: rzOrder.id,
         amount: rzOrder.amount,
         currency: rzOrder.currency || "INR",
@@ -139,48 +180,47 @@ export default function CheckoutPage() {
         },
         theme: { color: "#EF6C00" },
 
-        // Handler called on successful payment
-        handler: async function (response) {
-          try {
-            // Verify payment signature with backend
-            if (response && response.razorpay_payment_id && response.razorpay_order_id && response.razorpay_signature) {
-              const verifyUrl = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/verify-payment`;
-              const verifyResp = await axios.post(verifyUrl, {
+          // Handler called on successful payment
+          handler: async function (response) {
+            try {
+              // Verify payment signature with backend
+              if (response && response.razorpay_payment_id && response.razorpay_order_id && response.razorpay_signature) {
+              const verifyResult = await verifyPayment({
                 order_id: response.razorpay_order_id,
                 payment_id: response.razorpay_payment_id,
                 signature: response.razorpay_signature
               });
+              
+              if (verifyResult.success && verifyResult.data && verifyResult.data.status === "success") {
+                  // Create order in app database
+                  const appOrderPayload = buildAppOrderPayload({
+                    status: "Paid",
+                    method: "Razorpay",
+                    id: response.razorpay_payment_id, // Match backend parameter name
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                  });
 
-              if (verifyResp.data && verifyResp.data.status === "success") {
-                // Create order in app database
-                const appOrderPayload = buildAppOrderPayload({
-                  status: "Paid",
-                  method: "Razorpay",
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_order_id: response.razorpay_order_id,
-                });
-
-                const appCreateResp = await createAppOrder(appOrderPayload);
-                if (appCreateResp.success) {
-                  setOrderLoading(false);
-                  navigate("/Order");
+                  const appCreateResp = await createAppOrder(appOrderPayload);
+                  if (appCreateResp.success) {
+                    setOrderLoading(false);
+                    await clearCart(); // Clear the cart after successful order
+                    navigate("/Order");
+                  } else {
+                    throw new Error(appCreateResp.message || "Failed to save order in database.");
+                  }
                 } else {
-                  throw new Error(appCreateResp.message || "Failed to save order in database.");
+                  throw new Error("Payment verification failed.");
                 }
               } else {
-                throw new Error("Payment verification failed.");
+                throw new Error("Invalid payment response received.");
               }
-            } else {
-              throw new Error("Invalid payment response received.");
+            } catch (err) {
+              console.error("Payment handler error:", err);
+              setOrderError(err.message || "Payment processing failed.");
+              setOrderLoading(false);
             }
-          } catch (err) {
-            console.error("Payment handler error:", err);
-            setOrderError(err.message || "Payment processing failed.");
-            setOrderLoading(false);
-          }
-        },
-
-        modal: {
+          },        modal: {
           ondismiss: function () {
             setOrderLoading(false);
           }
@@ -201,20 +241,32 @@ export default function CheckoutPage() {
     } catch (err) {
       console.error("Checkout error:", err);
       
-      let errorMessage = "Failed to start checkout.";
+      // Detailed error logging
+      console.log('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        endpoint: ENDPOINTS.PAYMENT.INITIATE
+      });
       
-      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
-        errorMessage = "Request timeout. Please check your internet connection and try again.";
-      } else if (err.code === 'NETWORK_ERROR' || err.message.includes('Network Error')) {
-        errorMessage = "Network error. Please check if the server is running and try again.";
-      } else if (err.response?.status === 404) {
-        errorMessage = "Server endpoint not found. Please ensure the backend server is running on the correct port.";
-      } else if (err.response?.status >= 500) {
-        errorMessage = "Server error. Please try again later.";
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
+      // Import error handling utilities
+      const { getUserFriendlyErrorMessage } = await import('../utils/errorHandling.js');
+      const logger = await import('../utils/logger.js');
+      
+      // Log the error
+      logger.error("Checkout failed", err);
+      
+      // Specific error messages based on common scenarios
+      let errorMessage = "Failed to create Razorpay order";
+      
+      if (err.response?.data?.message) {
+        errorMessage = `Razorpay error: ${err.response.data.message}`;
+      } else if (err.response?.status === 401) {
+        errorMessage = "Authentication failed. Please login again.";
+      } else if (err.message.includes('Network Error')) {
+        errorMessage = "Network error. Please check if the backend server is running.";
+      } else {
+        errorMessage = getUserFriendlyErrorMessage(err);
       }
       
       setOrderError(errorMessage);
@@ -244,24 +296,79 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Address */}
           <div>
-            <h2 className="text-lg font-semibold mb-2 text-gray-800">Shipping Address</h2>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold text-gray-800">Shipping Address</h2>
+              {addresses.length > 1 && (
+                <button 
+                  type="button"
+                  onClick={() => setShowAddressSelector(!showAddressSelector)}
+                  className="text-sm text-orange-600 hover:text-orange-700"
+                >
+                  {showAddressSelector ? 'Hide Options' : 'Change Address'}
+                </button>
+              )}
+            </div>
+            
             {addressLoading ? (
               <div className="text-gray-500">Loading address...</div>
             ) : address ? (
-              <div className="bg-gray-50 rounded-lg p-4 text-gray-700 text-sm">
-                <div><span className="font-semibold">Name:</span> {address.fullName}</div>
-                <div><span className="font-semibold">Phone:</span> {address.phoneNumber}</div>
-                <div><span className="font-semibold">Email:</span> {address.email}</div>
-                <div><span className="font-semibold">Address:</span> {address.street}{address.landmark ? `, ${address.landmark}` : ""}</div>
-                <div>
-                  <span className="font-semibold">City/State/Pincode:</span> {address.city}, {address.state} - {address.pinCode}
+              <>
+                <div className="bg-gray-50 rounded-lg p-4 text-gray-700 text-sm">
+                  <div><span className="font-semibold">Name:</span> {address.fullName}</div>
+                  <div><span className="font-semibold">Phone:</span> {address.phoneNumber}</div>
+                  <div><span className="font-semibold">Email:</span> {address.email}</div>
+                  <div><span className="font-semibold">Address:</span> {address.street}{address.landmark ? `, ${address.landmark}` : ""}</div>
+                  <div>
+                    <span className="font-semibold">City/State/Pincode:</span> {address.city}, {address.state} - {address.pinCode}
+                  </div>
+                  <div><span className="font-semibold">Country:</span> {address.country}</div>
+                  {address.company && <div><span className="font-semibold">Company:</span> {address.company}</div>}
+                  {address.deliveryInstructions && <div><span className="font-semibold">Instructions:</span> {address.deliveryInstructions}</div>}
                 </div>
-                <div><span className="font-semibold">Country:</span> {address.country}</div>
-                {address.company && <div><span className="font-semibold">Company:</span> {address.company}</div>}
-                {address.deliveryInstructions && <div><span className="font-semibold">Instructions:</span> {address.deliveryInstructions}</div>}
-              </div>
+                
+                {showAddressSelector && addresses.length > 0 && (
+                  <div className="mt-4 border rounded-lg overflow-hidden">
+                    <h3 className="bg-gray-100 px-3 py-2 font-medium text-sm">Select Shipping Address</h3>
+                    <div className="max-h-60 overflow-y-auto">
+                      {addresses.map(addr => (
+                        <div 
+                          key={addr._id} 
+                          onClick={() => setAddress(addr)}
+                          className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition ${addr._id === address._id ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}`}
+                        >
+                          <div className="flex justify-between">
+                            <span className="font-medium">{addr.fullName}</span>
+                            {addr.isDefault && <span className="text-xs bg-green-100 text-green-800 rounded px-2 py-1">Default</span>}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">{addr.street}, {addr.city}, {addr.state}, {addr.pinCode}</div>
+                          <div className="text-xs text-gray-500">{addr.phoneNumber}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {addresses.length === 0 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => navigate('/profile/addresses/add')}
+                      className="text-sm text-orange-600 hover:underline"
+                    >
+                      + Add a New Address
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="text-red-600">{addressError || "No address found."}</div>
+              <div>
+                <div className="text-red-600 mb-4">{addressError || "No address found."}</div>
+                <button
+                  onClick={() => navigate('/profile/addresses/add')}
+                  className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition"
+                >
+                  Add New Address
+                </button>
+              </div>
             )}
           </div>
 

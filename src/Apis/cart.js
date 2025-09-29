@@ -1,6 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL, ENDPOINTS } from "../config/api.config.js";
 
-const API_URL = "http://localhost:8000/api/v1/cart";
+// Use the centralized config
+const API_URL = `${API_BASE_URL}/api/v1/cart`;
 
 export const addToCartAPI = async (userId, productId, quantity = 1) => {
   try {

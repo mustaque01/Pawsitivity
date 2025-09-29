@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// Using Vite's built-in .env handling
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -51,6 +53,8 @@ export default defineConfig({
   // Asset optimization
   assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.webp'],
   define: {
-    global: 'globalThis'
-  }
+    global: 'globalThis',
+  },
+  // Only allow environment variables with VITE_ prefix
+  envPrefix: 'VITE_'
 })

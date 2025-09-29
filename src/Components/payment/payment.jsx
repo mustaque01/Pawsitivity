@@ -22,7 +22,7 @@ function Checkout() {
       }
 
       // Create order in backend with proper error handling
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
       const { data: order } = await axios.post(`${backendUrl}/create-order`, {
         amount,
         currency: 'INR',
@@ -39,7 +39,7 @@ function Checkout() {
       }
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: import.meta.env.RAZORPAY_KEY_ID,
         order_id: order.id,
         amount: order.amount,
         currency: order.currency,

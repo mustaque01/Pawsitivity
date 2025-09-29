@@ -1,15 +1,13 @@
 
 import axios from "axios";
+import { API_BASE_URL, ENDPOINTS, getAuthHeaders } from "../config/api.config.js";
 // import multer from 'multer';
 // import path from 'path';
 
 // Create a separate instance for products API
 const PRODUCTS_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/products",
-  
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: `${API_BASE_URL}/api/v1/products`,
+  headers: getAuthHeaders()
 });
 
 // Add axios interceptor to include token in requests for products API
@@ -306,10 +304,8 @@ export const deleteProductImages = async (productId, imageIds) => {
 
 // order api
 const ORDER_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/orders",
-  headers: {
-    "Content-Type": "application/json"
-  }
+  baseURL: `${API_BASE_URL}/api/v1/orders`,
+  headers: getAuthHeaders()
 });
 ORDER_API_URL.interceptors.request.use(
   (config) => {

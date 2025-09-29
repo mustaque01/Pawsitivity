@@ -1,10 +1,9 @@
 import axios from "axios";
+import { API_BASE_URL, ENDPOINTS, DEFAULT_HEADERS } from "../config/api.config.js";
 
 const API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/users",
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: `${API_BASE_URL}/api/v1/users`,
+  headers: DEFAULT_HEADERS
 });
 
 // Add axios interceptor to include token in requests
@@ -96,10 +95,8 @@ export const logout = () => {
 
 // contact us api
 const CONTACT_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/contact",
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: `${API_BASE_URL}/api/v1/contact`,
+  headers: DEFAULT_HEADERS
 });
 export const submitContact = async (contactData) => {
   try {
@@ -175,10 +172,8 @@ export const getUserDetailByAdmin = async (userId) => {
 
 // address api
 const ADDRESS_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/address",
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: `${API_BASE_URL}/api/v1/address`,
+  headers: DEFAULT_HEADERS
 }); 
 export const addAddress = async (addressData) => {
   try {
