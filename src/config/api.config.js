@@ -1,9 +1,3 @@
-// src/config/api.config.js
-
-/**
- * API configuration for the Pawsitivity application
- */
-
 // Base URL for all API requests
 export const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
@@ -69,10 +63,6 @@ export const DEFAULT_HEADERS = {
 // Default timeout for API requests (in milliseconds)
 export const DEFAULT_TIMEOUT = 15000; // 15 seconds
 
-/**
- * Get authorization headers with JWT token
- * @returns {Object} Headers object with Authorization
- */
 export const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return token ? { 

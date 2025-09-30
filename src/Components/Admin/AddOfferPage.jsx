@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { getAllProductsByAdmin, addProductOffer } from "../../Apis/product_api";
+import { useAuth } from "../Auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function AddOfferPage() {
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [promotion, setPromotion] = useState("");
@@ -10,6 +14,12 @@ export default function AddOfferPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    // Check if user is admin
+    if (!authLoading && (!isLoggedIn || user?.userType !== "admin")) {
+      navigate("/admin/login");
+      return;
+    }
+    
     const fetchProducts = async () => {
       setLoading(true);
       const result = await getAllProductsByAdmin();
@@ -18,8 +28,11 @@ export default function AddOfferPage() {
       }
       setLoading(false);
     };
-    fetchProducts();
-  }, []);
+    
+    if (isLoggedIn && user?.userType === "admin") {
+      fetchProducts();
+    }
+  }, [authLoading, isLoggedIn, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -135,14 +148,39 @@ export default function AddOfferPage() {
             </div>
           </div>
         )}
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition"
-          disabled={loading}
-        >
-          {loading ? "Adding Offer..." : "Add Offer"}
-        </button>
-        {message && <div className="mt-2 text-center text-sm text-blue-600">{message}</div>}
+        <div className="space-y-2">
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition"
+            disabled={loading}
+          >
+            {loading ? "Adding Offer..." : "Add Offer"}
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate("/admin/dashboard")}
+            className="w-full py-2 px-4 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+        
+        {message && (
+          <div className="mt-4 p-3 text-center rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+            {message}
+            {message.includes("successfully") && (
+              <div className="mt-2">
+                <button 
+                  onClick={() => navigate("/admin/dashboard")}
+                  className="text-sm underline"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </form>
     </div>
   );

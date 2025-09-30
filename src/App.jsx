@@ -180,8 +180,21 @@ function AppContent() {
           <Route path="/address" element={<LayoutWithFooter><AddressPage /></LayoutWithFooter>} />
           <Route path="/checkout" element={<LayoutWithFooter><CheckoutPage /></LayoutWithFooter>} />
           <Route path="/Order" element={<LayoutWithFooter><Order /></LayoutWithFooter>} />
-          <Route path="/admin/add-offer" element={<LayoutWithFooter><AddOfferPage /></LayoutWithFooter>} />
-
+          
+          {/* Admin routes that need protection */}
+          <Route 
+            path="/admin/add-offer" 
+            element={
+              <ProtectedRoute 
+                isLoggedIn={isLoggedIn} 
+                userType={userType} 
+                requiredUserType="admin" 
+                loading={loading}
+              >
+                <LayoutWithFooter><AddOfferPage /></LayoutWithFooter>
+              </ProtectedRoute>
+            }
+          />
           
           {/* Cart route (no footer for better UX) */}
           <Route path="/cart" element={<CartPage />} />

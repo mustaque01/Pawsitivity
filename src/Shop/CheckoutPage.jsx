@@ -192,13 +192,19 @@ export default function CheckoutPage() {
               });
               
               if (verifyResult.success && verifyResult.data && verifyResult.data.status === "success") {
-                  // Create order in app database
+                  // Log verification details
+                  console.log("Payment verification successful:", verifyResult.data);
+                  
+                  // Create order in app database with complete payment information
                   const appOrderPayload = buildAppOrderPayload({
                     status: "Paid",
                     method: "Razorpay",
-                    id: response.razorpay_payment_id, // Match backend parameter name
+                    id: response.razorpay_payment_id, // Payment ID from Razorpay
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature,
+                    transaction_ref: verifyResult.data.transaction_ref || `TXN-${Date.now()}`, // Use server transaction ref or generate one
+                    payment_timestamp: verifyResult.data.verified_at || new Date().toISOString(),
                   });
 
                   const appCreateResp = await createAppOrder(appOrderPayload);

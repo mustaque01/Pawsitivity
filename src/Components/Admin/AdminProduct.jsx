@@ -8,14 +8,12 @@ import {
   FaUpload,
 } from "react-icons/fa";
 import { useAuth } from "../Auth/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getAllProductsByAdmin,
   deleteProduct,
   createProduct,
   updateProduct,
-  addProductOffer,
-  removeProductOffer
 } from "../../Apis/product_api";
 import { Feather } from "lucide-react";
 
@@ -267,13 +265,13 @@ export default function AdminProduct() {
               <FaPlus />
               <span>Add Product</span>
             </button>
-            <button
-              onClick={() => navigate("/admin/addOffer")}
+            <Link
+              to="/admin/add-offer"
               className="flex items-center justify-center px-4 py-2 space-x-2 text-sm text-white transition-all bg-yellow-600 rounded-lg hover:bg-yellow-700 shadow-md hover:shadow-lg"
             >
               <FaPlus />
               <span>Add Offer</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
