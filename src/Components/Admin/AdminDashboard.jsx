@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaTrash, FaArrowLeft, FaTimes } from "react-icons/fa";
+import { FaPlus, FaTrash, FaArrowLeft, FaTimes, FaShippingFast } from "react-icons/fa";
 import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AdminProduct from "../Admin/AdminProduct";
@@ -161,6 +161,7 @@ export default function AdminDashboard() {
                 "products",
                 "categories",
                 "orders",
+                "shipments",
                 "customers",
                 "analytics",
               ].map((tab) => (
@@ -173,7 +174,14 @@ export default function AdminDashboard() {
                   }`}
                   onClick={() => setCurrentTab(tab)}
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab === "shipments" ? (
+                    <span className="flex items-center">
+                      <FaShippingFast className="mr-1" />
+                      Shipments
+                    </span>
+                  ) : (
+                    tab.charAt(0).toUpperCase() + tab.slice(1)
+                  )}
                 </button>
               ))}
             </div>
@@ -309,6 +317,30 @@ export default function AdminDashboard() {
 
         {/* Other tabs */}
         {currentTab === "orders" && <OrdersManager />}
+        {currentTab === "shipments" && (
+          <div className="p-8 bg-white rounded-lg shadow-lg border border-gray-200 sm:p-12 sm:py-8">
+            <div className="mb-6 flex flex-col md:flex-row justify-between items-start gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Shipment Management</h3>
+                <p className="text-gray-600">Track and manage order shipments</p>
+              </div>
+              <button
+                onClick={() => navigate("/admin/shipments")}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors flex items-center"
+              >
+                <FaShippingFast className="mr-2" />
+                Manage Shipments
+              </button>
+            </div>
+            
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+              <p className="text-yellow-800">
+                Use the shipment management system to create shipments, track orders, and manage deliveries.
+                Click the button above to access the full shipment dashboard.
+              </p>
+            </div>
+          </div>
+        )}
         {["analytics"].map(
           (tab) =>
             currentTab === tab && (

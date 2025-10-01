@@ -38,10 +38,14 @@ import CartPage from './Shop/CartPage'
 import AddressPage from './Shop/AddressPage'
 import CheckoutPage from './Shop/CheckoutPage'
 import Order from './Shop/OrderPage'
+import TrackingPage from './Components/TrackingPage'
+
+// Admin Components
+import AdminShipments from './Components/Admin/AdminShipments'
+import AddOfferPage from './Components/Admin/AddOfferPage'
 
 // Context Providers
-import { CartProvider } from './Context/CartContext'
-import AddOfferPage from './Components/Admin/AddOfferPage';
+import { CartProvider } from './Context/CartContext';
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -180,6 +184,8 @@ function AppContent() {
           <Route path="/address" element={<LayoutWithFooter><AddressPage /></LayoutWithFooter>} />
           <Route path="/checkout" element={<LayoutWithFooter><CheckoutPage /></LayoutWithFooter>} />
           <Route path="/Order" element={<LayoutWithFooter><Order /></LayoutWithFooter>} />
+          <Route path="/track" element={<LayoutWithFooter><TrackingPage /></LayoutWithFooter>} />
+          <Route path="/track/:orderId" element={<LayoutWithFooter><TrackingPage /></LayoutWithFooter>} />
           
           {/* Admin routes that need protection */}
           <Route 
@@ -192,6 +198,20 @@ function AppContent() {
                 loading={loading}
               >
                 <LayoutWithFooter><AddOfferPage /></LayoutWithFooter>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route 
+            path="/admin/shipments" 
+            element={
+              <ProtectedRoute 
+                isLoggedIn={isLoggedIn} 
+                userType={userType} 
+                requiredUserType="admin" 
+                loading={loading}
+              >
+                <LayoutWithFooter><AdminShipments /></LayoutWithFooter>
               </ProtectedRoute>
             }
           />
