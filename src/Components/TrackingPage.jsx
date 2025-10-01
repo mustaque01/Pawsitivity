@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { trackOrderById, trackOrderByAwb } from '../Apis/tracking';
 import { FaBox, FaShippingFast, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaCalendarAlt, FaTruck, FaBarcode } from 'react-icons/fa';
@@ -15,8 +15,8 @@ const TrackingPage = () => {
   const [trackingId, setTrackingId] = useState(orderId || '');
   const [trackingIdType, setTrackingIdType] = useState('order'); // 'order' or 'awb'
 
-  // Function to get the tracking details
-  const getTrackingDetails = async (id, type) => {
+  // Function to get the tracking details wrapped with useCallback
+  const getTrackingDetails = useCallback(async (id, type) => {
     try {
       setLoading(true);
       setError(null);
@@ -44,7 +44,7 @@ const TrackingPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Save successful tracking query to localStorage for history
   const saveToTrackingHistory = (id, type) => {
@@ -104,7 +104,7 @@ const TrackingPage = () => {
     } else {
       setLoading(false);
     }
-  }, [orderId, location.search]);
+  }, [orderId, location.search, getTrackingDetails]);
 
   // Get recent tracking history from localStorage
   const [trackingHistory, setTrackingHistory] = useState([]);
@@ -307,10 +307,139 @@ const TrackingPage = () => {
             </div>
           </div>
           
+          {/* Shipment Status Progress */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-6">Shipment Progress</h2>
+            
+            {/* Status Progress Bar */}
+            <div className="mb-10">
+              {(() => {
+                // Define the standard shipment statuses in order
+                const statuses = [
+                  { key: 'order_placed', label: 'Order Placed', icon: FaBox },
+                  { key: 'processing', label: 'Processing', icon: FaBox },
+                  { key: 'shipped', label: 'Shipped', icon: FaShippingFast },
+                  { key: 'out_for_delivery', label: 'Out for Delivery', icon: FaTruck },
+                  { key: 'delivered', label: 'Delivered', icon: FaCheckCircle }
+                ];
+                
+                // Map Shiprocket or internal statuses to our standard statuses
+                const currentStatus = trackingInfo.current_status || 
+                                     (orderDetails?.shipmentStatus || 'Processing');
+                
+                // Helper function to determine if a status is active
+                const isActive = (status) => {
+                  const statusKey = status.key.toLowerCase();
+                  const currentStatusLower = currentStatus.toLowerCase();
+                  
+                  if (currentStatusLower.includes('delivered') || currentStatusLower === 'delivered early') {
+                    return true; // If delivered, all steps are active
+                  }
+                  if (currentStatusLower.includes('out for delivery') && 
+                      (statusKey === 'order_placed' || statusKey === 'processing' || statusKey === 'shipped')) {
+                    return true;
+                  }
+                  if ((currentStatusLower.includes('shipped') || currentStatusLower === 'in transit') && 
+                      (statusKey === 'order_placed' || statusKey === 'processing')) {
+                    return true;
+                  }
+                  if (currentStatusLower.includes('processing') && statusKey === 'order_placed') {
+                    return true;
+                  }
+                  
+                  return currentStatusLower.includes(statusKey);
+                };
+                
+                return (
+                  <div className="relative">
+                    {/* Progress Bar */}
+                    <div className="absolute left-0 top-10 right-0 h-1 bg-gray-200"></div>
+                    <div className="absolute left-0 top-10 h-1 bg-green-500" 
+                         style={{ 
+                           width: (() => {
+                             if (currentStatus.toLowerCase().includes('delivered')) return '100%';
+                             if (currentStatus.toLowerCase().includes('out for delivery')) return '75%';
+                             if (currentStatus.toLowerCase().includes('shipped') || currentStatus.toLowerCase() === 'in transit') return '50%';
+                             if (currentStatus.toLowerCase().includes('processing')) return '25%';
+                             return '0%';
+                           })()
+                         }}>
+                    </div>
+                    
+                    {/* Status Points */}
+                    <div className="flex justify-between">
+                      {statuses.map((status) => {
+                        const StatusIcon = status.icon;
+                        const active = isActive(status);
+                        
+                        return (
+                          <div key={status.key} className="flex flex-col items-center relative">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 ${
+                              active ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+                            }`}>
+                              <StatusIcon />
+                            </div>
+                            <p className={`mt-3 text-xs font-medium text-center max-w-[80px] ${
+                              active ? 'text-green-600' : 'text-gray-400'
+                            }`}>
+                              {status.label}
+                            </p>
+                            
+                            {/* Current indicator */}
+                            {(() => {
+                              const statusLower = status.key.toLowerCase();
+                              const currentLower = currentStatus.toLowerCase();
+                              
+                              if (
+                                (statusLower === 'delivered' && currentLower.includes('delivered')) ||
+                                (statusLower === 'out_for_delivery' && currentLower.includes('out for delivery')) ||
+                                (statusLower === 'shipped' && (currentLower.includes('shipped') || currentLower === 'in transit')) ||
+                                (statusLower === 'processing' && currentLower.includes('processing')) ||
+                                (statusLower === 'order_placed' && currentLower.includes('order'))
+                              ) {
+                                return (
+                                  <div className="absolute -top-8">
+                                    <div className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                                      Current
+                                    </div>
+                                    <div className="w-2 h-2 border-t-4 border-l-4 border-r-4 border-yellow-500 mx-auto" 
+                                         style={{ transform: 'translateY(-1px)' }}></div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Expected delivery information */}
+            {trackingInfo.expected_delivery_date && (
+              <div className="bg-green-50 p-4 rounded-lg border border-green-100 flex items-center mb-6">
+                <FaCalendarAlt className="text-green-600 mr-3 text-xl" />
+                <div>
+                  <p className="font-medium text-green-800">Expected Delivery</p>
+                  <p className="text-green-700">
+                    {new Date(trackingInfo.expected_delivery_date).toLocaleDateString()} 
+                    {new Date(trackingInfo.expected_delivery_date).toLocaleDateString() === new Date().toLocaleDateString() && (
+                      <span className="ml-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">Today</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
           {/* Tracking Timeline */}
-          {trackingInfo.tracking_data && trackingInfo.tracking_data.length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-6">Tracking Timeline</h2>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-6">Tracking Timeline</h2>
+            
+            {trackingInfo.tracking_data && trackingInfo.tracking_data.length > 0 ? (
               <div className="relative">
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                 <div className="space-y-6">
@@ -336,22 +465,24 @@ const TrackingPage = () => {
                   ))}
                 </div>
               </div>
-            </div>
-          )}
-          
-          {/* Placeholder for timeline when tracking data is not available */}
-          {(!trackingInfo.tracking_data || trackingInfo.tracking_data.length === 0) && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-4">Tracking Status</h2>
+            ) : (
               <div className="text-center py-8">
                 <FaShippingFast className="mx-auto text-5xl text-yellow-500 mb-4" />
                 <p className="text-gray-600">
                   Detailed tracking information is being updated.
                   <br />Please check back later for real-time updates.
                 </p>
+                
+                {/* Basic status when no detailed timeline is available */}
+                <div className="mt-6 p-4 bg-yellow-50 rounded-lg inline-block">
+                  <p className="font-medium text-yellow-800">Current Status</p>
+                  <p className="text-yellow-700">
+                    {trackingInfo.current_status || orderDetails?.shipmentStatus || 'Processing'}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
       

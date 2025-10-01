@@ -5,7 +5,6 @@ import { getAllOrders } from '../../Apis/product_api';
 import { 
   createShipment, 
   updateOrderTrackingInfo, 
-  getAvailableCouriers 
 } from '../../Apis/tracking';
 import { 
   FaShippingFast, 
@@ -17,9 +16,14 @@ import {
   FaFilter,
   FaBarcode,
   FaEye,
-  FaPrint
+  FaPrint,
+  FaFileInvoice,
+  FaClipboardCheck,
+  FaBoxOpen
 } from 'react-icons/fa';
 import ShipmentDetailsModal from './ShipmentDetailsModal';
+import ShipmentStatusModal from './ShipmentStatusModal';
+import ShipmentStatusBadge from './ShipmentStatusBadge';
 
 const AdminShipments = () => {
   const { user, isLoggedIn, loading } = useAuth();
@@ -38,8 +42,19 @@ const AdminShipments = () => {
     shipmentId: '',
     courier: ''
   });
-  const [selectedShipmentId, setSelectedShipmentId] = useState(null); // For viewing shipment details
-  const [availableCouriers, setAvailableCouriers] = useState([]);
+  const [viewShipmentDetails, setViewShipmentDetails] = useState(null); // For viewing shipment details
+  const [updateStatusOrder, setUpdateStatusOrder] = useState(null); // For updating status
+  
+  // Set tracking info when an order is selected for updating
+  useEffect(() => {
+    if (selectedOrder) {
+      setTrackingInfo({
+        awbNumber: selectedOrder.awbNumber || '',
+        shipmentId: selectedOrder.shipmentId || '',
+        courier: selectedOrder.courier || ''
+      });
+    }
+  }, [selectedOrder]);
   
   // Fetch orders from backend - wrapped in useCallback to avoid infinite re-renders
   const fetchOrders = React.useCallback(async () => {
@@ -48,8 +63,11 @@ const AdminShipments = () => {
       setError(null);
       const result = await getAllOrders();
       if (result.success) {
-        setOrders(result.data.orders || []);
-        applyFilters(result.data.orders || [], searchTerm, statusFilter);
+        console.log('Orders fetched successfully:', result.data.orders);
+        const ordersData = result.data.orders || [];
+        setOrders(ordersData);
+        const filteredData = applyFilters(ordersData, searchTerm, statusFilter);
+        setFilteredOrders(filteredData);
       } else {
         setError(result.message || 'Failed to fetch orders');
       }
@@ -63,14 +81,18 @@ const AdminShipments = () => {
   
   // Apply filters to orders
   const applyFilters = (ordersList, search, status) => {
-    let filtered = [...ordersList];
+    // Make sure we're working with a proper array
+    let filtered = Array.isArray(ordersList) ? [...ordersList] : [];
+    
+    console.log('Applying filters to orders:', filtered);
     
     // Apply search term filter
     if (search) {
       filtered = filtered.filter(order => 
-        order._id.toLowerCase().includes(search.toLowerCase()) || 
+        order._id?.toLowerCase().includes(search.toLowerCase()) || 
         order.orderId?.toLowerCase().includes(search.toLowerCase()) ||
-        order.awbNumber?.toLowerCase().includes(search.toLowerCase())
+        order.awbNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        order.shipmentId?.toLowerCase().includes(search.toLowerCase())
       );
     }
     
@@ -79,7 +101,11 @@ const AdminShipments = () => {
       if (status === 'shipped') {
         filtered = filtered.filter(order => order.awbNumber);
       } else if (status === 'unshipped') {
-        filtered = filtered.filter(order => !order.awbNumber);
+        filtered = filtered.filter(order => !order.awbNumber && !order.shipmentId);
+      } else if (status === 'processing') {
+        filtered = filtered.filter(order => 
+          order.shipmentId && !order.awbNumber && order.shipmentStatus === 'Processing'
+        );
       } else if (status === 'paid') {
         filtered = filtered.filter(order => 
           order.paymentInfo && order.paymentInfo.status === 'Paid'
@@ -87,7 +113,8 @@ const AdminShipments = () => {
       }
     }
     
-    setFilteredOrders(filtered);
+    console.log('Filtered orders after applying filters:', filtered);
+    return filtered;
   };
   
   // Create shipment for an order
@@ -98,7 +125,21 @@ const AdminShipments = () => {
       
       const result = await createShipment(orderId);
       if (result.success) {
-        alert('Shipment created successfully!');
+        const hasInvoice = result.shipment?.invoice_url;
+        const message = hasInvoice 
+          ? 'Shipment created successfully! You can view the invoice now.' 
+          : 'Shipment created successfully!';
+        
+        if (hasInvoice) {
+          // Show confirmation with option to view invoice
+          const viewInvoice = window.confirm(`${message}\n\nWould you like to view the invoice?`);
+          if (viewInvoice) {
+            window.open(result.shipment.invoice_url, '_blank');
+          }
+        } else {
+          alert(message);
+        }
+        
         fetchOrders(); // Refresh orders
       } else {
         setError(result.message || 'Failed to create shipment');
@@ -111,20 +152,35 @@ const AdminShipments = () => {
     }
   };
   
-  // Update order tracking information manually
+  // Handle the form submission for updating tracking info manually
   const handleUpdateTracking = async (e) => {
     e.preventDefault();
-    if (!selectedOrder) return;
     
     try {
-      setProcessingOrderId(selectedOrder._id);
       setError(null);
+      setProcessingOrderId(selectedOrder._id); // Show loading indicator
       
-      const result = await updateOrderTrackingInfo(selectedOrder._id, trackingInfo);
+      // Prepare tracking info with shipment status if not already set
+      const updatedTrackingInfo = {
+        ...trackingInfo,
+        // Set to Shipped if not already set and awbNumber is provided
+        shipmentStatus: trackingInfo.shipmentStatus || 
+                       (trackingInfo.awbNumber ? 'Shipped' : selectedOrder.shipmentStatus || 'Processing')
+      };
+      
+      console.log('Updating tracking info:', updatedTrackingInfo);
+      
+      const result = await updateOrderTrackingInfo(selectedOrder._id, updatedTrackingInfo);
       if (result.success) {
         alert('Tracking information updated successfully!');
-        setSelectedOrder(null);
         fetchOrders(); // Refresh orders
+        setSelectedOrder(null); // Close modal
+        // Reset tracking info for next use
+        setTrackingInfo({
+          awbNumber: '',
+          shipmentId: '',
+          courier: ''
+        });
       } else {
         setError(result.message || 'Failed to update tracking information');
       }
@@ -132,8 +188,44 @@ const AdminShipments = () => {
       setError('An error occurred while updating tracking information');
       console.error('Error updating tracking:', err);
     } finally {
-      setProcessingOrderId(null);
+      setProcessingOrderId(null); // Clear loading indicator
     }
+  };
+  
+  // Handle shipment status update
+  const handleStatusUpdate = (updatedOrder) => {
+    console.log('handleStatusUpdate called with order:', updatedOrder);
+    setUpdateStatusOrder(null);
+    
+    if (!updatedOrder || !updatedOrder._id) {
+      console.error('Invalid updated order received:', updatedOrder);
+      return;
+    }
+    
+    // Get a fresh list of orders - this is more reliable
+    fetchOrders().then(() => {
+      console.log('Orders refreshed after status update');
+    }).catch(err => {
+      console.error('Error refreshing orders after status update:', err);
+      
+      // Fallback: Try to update locally if API fetch fails
+      const updatedOrders = orders.map(order => {
+        if (order._id === updatedOrder._id) {
+          // Create a new merged order object
+          return {
+            ...order,
+            ...updatedOrder,
+            shipmentStatus: updatedOrder.shipmentStatus || order.shipmentStatus || 'Pending'
+          };
+        }
+        return order;
+      });
+      
+      console.log('Updated orders list (fallback):', updatedOrders);
+      setOrders(updatedOrders);
+      const filtered = applyFilters(updatedOrders, searchTerm, statusFilter);
+      setFilteredOrders(filtered);
+    });
   };
   
   // Check auth status and fetch orders on mount
@@ -149,7 +241,9 @@ const AdminShipments = () => {
   
   // Update filtered orders when filters change
   useEffect(() => {
-    applyFilters(orders, searchTerm, statusFilter);
+    console.log('Filters changed, re-applying filters to orders');
+    const filtered = applyFilters(orders, searchTerm, statusFilter);
+    setFilteredOrders(filtered);
   }, [searchTerm, statusFilter, orders]);
   
   return (
@@ -179,7 +273,8 @@ const AdminShipments = () => {
               >
                 <option value="all">All Orders</option>
                 <option value="shipped">Shipped</option>
-                <option value="unshipped">Unshipped</option>
+                <option value="processing">Processing</option>
+                <option value="unshipped">Not Shipped</option>
                 <option value="paid">Paid</option>
               </select>
             </div>
@@ -282,13 +377,100 @@ const AdminShipments = () => {
                                 {order.courier}
                               </div>
                             )}
+                            <div className="mt-1">
+                              <ShipmentStatusBadge status={order.shipmentStatus || 'Pending'} />
+                            </div>
+                            {/* Status progression visualization */}
+                            <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              {(() => {
+                                // Define the status progression percentages
+                                const progressMap = {
+                                  'Pending': 10,
+                                  'Processing': 25,
+                                  'Shipped': 50,
+                                  'Out for Delivery': 75,
+                                  'Delivered': 100,
+                                  'Delivered Early': 100,
+                                  'Returning': 50,
+                                  'Returned': 75,
+                                  'Cancelled': 100
+                                };
+                                
+                                const status = order.shipmentStatus || 'Pending';
+                                const progressPercent = progressMap[status] || 0;
+                                
+                                const getStatusColor = (status) => {
+                                  if (status.includes('Delivered')) return 'bg-green-500';
+                                  if (status === 'Out for Delivery') return 'bg-blue-500';
+                                  if (status === 'Shipped') return 'bg-yellow-500';
+                                  if (status === 'Processing') return 'bg-indigo-500';
+                                  if (status === 'Returning' || status === 'Returned') return 'bg-orange-500';
+                                  if (status === 'Cancelled') return 'bg-red-500';
+                                  return 'bg-gray-500';
+                                };
+                                
+                                return (
+                                  <div 
+                                    className={`h-full ${getStatusColor(status)}`} 
+                                    style={{ width: `${progressPercent}%` }}
+                                  ></div>
+                                );
+                              })()}
+                            </div>
+                            
+                            {/* Invoice link */}
+                            {order.invoiceUrl && order.paymentInfo?.status === 'Paid' && (
+                              <div className="mt-1">
+                                <a 
+                                  href={order.invoiceUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                                  title="View invoice"
+                                >
+                                  <FaFileInvoice className="mr-1" /> 
+                                  View Invoice
+                                </a>
+                              </div>
+                            )}
+                            {order.invoiceUrl && order.paymentInfo?.status !== 'Paid' && (
+                              <div className="mt-1">
+                                <span 
+                                  className="flex items-center text-xs text-gray-500 cursor-not-allowed"
+                                  title="Invoice will be available once payment is confirmed"
+                                >
+                                  <FaFileInvoice className="mr-1" /> 
+                                  Invoice pending
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : order.shipmentId ? (
+                          <div>
+                            <div className="text-sm text-gray-700">
+                              <span className="font-medium">Shipment ID:</span> {order.shipmentId.substring(0, 8)}...
+                            </div>
+                            <div className="mt-1">
+                              <ShipmentStatusBadge status={order.shipmentStatus || 'Processing'} />
+                            </div>
+                            <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="h-full bg-indigo-500" style={{ width: '25%' }}></div>
+                            </div>
+                            <div className="text-xs text-amber-600 mt-1">
+                              AWB pending assignment
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-500">Not shipped</span>
+                          <div>
+                            <span className="text-sm text-gray-500">Not shipped</span>
+                            <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="h-full bg-gray-400" style={{ width: '10%' }}></div>
+                            </div>
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {!order.awbNumber ? (
+                        {!order.awbNumber && !order.shipmentId ? (
                           <button
                             onClick={() => handleCreateShipment(order._id)}
                             disabled={processingOrderId === order._id}
@@ -314,19 +496,44 @@ const AdminShipments = () => {
                           <div className="flex justify-end space-x-2">
                             <div className="flex space-x-1">
                               <button
-                                onClick={() => setSelectedShipmentId(order._id)}
-                                className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700"
+                                onClick={() => setViewShipmentDetails(order)}
+                                className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                title="View shipment details"
                               >
                                 <FaEye className="mr-1" />
                                 View
                               </button>
+                              
+                              <button
+                                onClick={() => setUpdateStatusOrder(order)}
+                                className="inline-flex items-center px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                title="Update shipment status"
+                              >
+                                <FaClipboardCheck className="mr-1" />
+                                Status
+                              </button>
+                              
                               <button
                                 onClick={() => setSelectedOrder(order)}
-                                className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700"
+                                title="Update tracking information"
                               >
                                 <FaTruck className="mr-1" />
-                                Update
+                                {order.shipmentId && !order.awbNumber ? 'Add AWB' : 'Track'}
                               </button>
+                              
+                              {order.invoiceUrl && order.paymentInfo?.status === 'Paid' && (
+                                <a
+                                  href={order.invoiceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center px-3 py-1 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+                                  title="View invoice"
+                                >
+                                  <FaFileInvoice className="mr-1" />
+                                  Invoice
+                                </a>
+                              )}
                             </div>
                           </div>
                         )}
@@ -443,15 +650,24 @@ const AdminShipments = () => {
         </div>
       )}
       
+      
       {/* Shipment Details Modal */}
-      {selectedShipmentId && (
-        <ShipmentDetailsModal 
-          orderId={selectedShipmentId} 
-          onClose={() => setSelectedShipmentId(null)}
+      {viewShipmentDetails && (
+        <ShipmentDetailsModal
+          order={viewShipmentDetails}
+          onClose={() => setViewShipmentDetails(null)}
+          onStatusUpdated={handleStatusUpdate}
+        />
+      )}
+      
+      {/* Shipment Status Update Modal */}
+      {updateStatusOrder && (
+        <ShipmentStatusModal
+          order={updateStatusOrder}
+          onClose={() => setUpdateStatusOrder(null)}
+          onStatusUpdated={handleStatusUpdate}
         />
       )}
     </div>
   );
-};
-
-export default AdminShipments;
+};export default AdminShipments;

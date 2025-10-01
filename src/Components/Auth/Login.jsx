@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaEye, FaEyeSlash, FaUser, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { login as loginAPI } from '../../Apis/auth';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaUser,
+  FaLock,
+  FaGoogle,
+  FaFacebook,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { login as loginAPI } from "../../Apis/auth";
 export default function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -13,15 +20,17 @@ export default function Login() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Email is invalid";
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -37,7 +46,10 @@ export default function Login() {
 
       if (res.success) {
         // Store full user object in localStorage
-        localStorage.setItem('user', JSON.stringify({ ...res.user, isAuthenticated: true }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...res.user, isAuthenticated: true })
+        );
         navigate("/");
       } else {
         setErrors({ submit: res.message || "Invalid credentials" });
@@ -62,20 +74,24 @@ export default function Login() {
         className="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col lg:flex-row overflow-hidden"
       >
         {/* Left Panel */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 lg:p-10 text-white flex-col justify-center items-center order-2 lg:order-1">
-          <h2 className="text-2xl lg:text-3xl font-bold mb-2 text-center">Hello, Friend!</h2>
-          <p className="mb-6 text-center text-sm px-4">Enter your personal details and start your journey with us</p>
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 lg:p-10 text-amber-800 flex-col justify-center items-center order-2 lg:order-1">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-2 text-center">
+            Hello, Friend!
+          </h2>
+          <p className="mb-6 text-center text-sm px-4">
+            Enter your personal details and start your journey with us
+          </p>
           <button
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate("/signup")}
             className="border border-white px-6 py-2 rounded-full font-medium hover:bg-white hover:text-yellow-600 transition"
           >
             SIGN UP
           </button>
           <div className="mt-6 text-center">
-            <p className="text-yellow-100 text-xs mb-2">Are you an admin?</p>
+            <p className="text-amber-800 text-xs mb-2">Are you an admin?</p>
             <button
-              onClick={() => navigate('/admin/login')}
-              className="text-white underline hover:text-yellow-200 text-sm font-medium transition-colors"
+              onClick={() => navigate("/admin/login")}
+              className="text-amber-800 underline hover:text-yellow-200 text-sm font-medium transition-colors"
             >
               Admin Portal
             </button>
@@ -84,7 +100,9 @@ export default function Login() {
 
         {/* Right Panel (Form) */}
         <div className="w-full lg:w-1/2 p-6 lg:p-10 order-1 lg:order-2">
-          <h2 className="text-xl lg:text-2xl font-bold text-yellow-600 text-center mb-6">Sign In</h2>
+          <h2 className="text-xl lg:text-2xl font-bold text-yellow-600 text-center mb-6">
+            Sign In
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5">
             <div>
               <input
@@ -93,18 +111,26 @@ export default function Login() {
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 lg:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm lg:text-base ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-4 py-2 lg:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm lg:text-base ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
               />
-              {errors.email && <p className="text-red-500 text-xs lg:text-sm mt-1">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs lg:text-sm mt-1">
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 lg:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm lg:text-base ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-4 py-2 lg:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm lg:text-base ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
               />
               <button
                 type="button"
@@ -113,32 +139,43 @@ export default function Login() {
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
-              {errors.password && <p className="text-red-500 text-xs lg:text-sm mt-1">{errors.password}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-xs lg:text-sm mt-1">
+                  {errors.password}
+                </p>
+              )}
             </div>
-            {errors.submit && <p className="text-red-500 text-xs lg:text-sm mt-1">{errors.submit}</p>}
+            {errors.submit && (
+              <p className="text-red-500 text-xs lg:text-sm mt-1">
+                {errors.submit}
+              </p>
+            )}
             <motion.button
               type="submit"
               disabled={isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full py-2 lg:py-3 rounded-lg font-semibold text-white transition-all text-sm lg:text-base ${isLoading
-                ? 'bg-yellow-300 cursor-not-allowed'
-                : 'bg-yellow-500 hover:bg-yellow-600 shadow-md'
-                }`}
+              className={`w-full py-2 lg:py-3 rounded-lg font-semibold text-white transition-all text-sm lg:text-base ${
+                isLoading
+                  ? "bg-yellow-300 cursor-not-allowed"
+                  : "bg-yellow-500 hover:bg-yellow-600 shadow-md"
+              }`}
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? "Signing In..." : "Sign In"}
             </motion.button>
           </form>
-          <div className="my-4 lg:my-6 text-center text-gray-500 text-sm">Or continue with</div>
+          <div className="my-4 lg:my-6 text-center text-gray-500 text-sm">
+            Or continue with
+          </div>
           <div className="flex gap-3 lg:gap-4 justify-center">
             <button
-              onClick={() => handleSocialLogin('google')}
+              onClick={() => handleSocialLogin("google")}
               className="p-2 lg:p-3 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
             >
               <FaGoogle className="text-red-500 text-sm lg:text-base" />
             </button>
             <button
-              onClick={() => handleSocialLogin('facebook')}
+              onClick={() => handleSocialLogin("facebook")}
               className="p-2 lg:p-3 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors"
             >
               <FaFacebook className="text-blue-600 text-sm lg:text-base" />
@@ -148,14 +185,14 @@ export default function Login() {
             Don’t have an account?
             <button
               className="text-yellow-600 font-semibold ml-2 hover:underline"
-              onClick={() => navigate('/signup')}
+              onClick={() => navigate("/signup")}
             >
               Sign up here
             </button>
           </div>
-          <div className='mt-4 text-center'>
+          <div className="mt-4 text-center">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="text-gray-500 hover:text-gray-700 font-medium"
             >
               Back to Home
@@ -163,7 +200,7 @@ export default function Login() {
           </div>
           <div className="lg:hidden text-center mt-4">
             <button
-              onClick={() => navigate('/admin/login')}
+              onClick={() => navigate("/admin/login")}
               className="text-yellow-600 hover:text-yellow-700 font-medium hover:underline"
             >
               Admin Portal

@@ -107,7 +107,15 @@ export const getAvailableCouriers = async (pickupPincode, deliveryPincode, weigh
 // Admin: Update order tracking information
 export const updateOrderTrackingInfo = async (orderId, trackingInfo) => {
   try {
+    console.log(`Updating tracking info for order ${orderId}:`, trackingInfo);
+    
     const response = await TRACKING_API_URL.put(`/update/${orderId}`, trackingInfo);
+    console.log('Update tracking API response:', response.data);
+    
+    if (!response.data.order) {
+      console.warn('API response missing order data:', response.data);
+    }
+    
     return {
       success: true,
       data: response.data,
@@ -119,6 +127,68 @@ export const updateOrderTrackingInfo = async (orderId, trackingInfo) => {
     return {
       success: false,
       message: error.response?.data?.message || 'Failed to update order tracking information',
+      error: error.message
+    };
+  }
+};
+
+// Get Shiprocket pickup locations
+export const getPickupLocations = async () => {
+  try {
+    const response = await TRACKING_API_URL.get('/pickup-locations');
+    return {
+      success: true,
+      data: response.data,
+      pickupLocations: response.data.pickupLocations,
+      message: 'Pickup locations fetched successfully'
+    };
+  } catch (error) {
+    console.error("Get Pickup Locations API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch pickup locations',
+      error: error.message
+    };
+  }
+};
+
+// Admin: Sync order status with Shiprocket tracking data
+export const syncOrderStatus = async (orderId) => {
+  try {
+    const response = await TRACKING_API_URL.get(`/sync-status/${orderId}`);
+    return {
+      success: true,
+      data: response.data,
+      order: response.data.order,
+      tracking: response.data.tracking,
+      statusUpdated: response.data.statusUpdated,
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error("Sync Order Status API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to sync order status',
+      error: error.message
+    };
+  }
+};
+
+// User: Request a return for an order
+export const requestReturn = async (orderId, reason) => {
+  try {
+    const response = await TRACKING_API_URL.post(`/return/${orderId}`, { reason });
+    return {
+      success: true,
+      data: response.data,
+      order: response.data.order,
+      message: 'Return request submitted successfully'
+    };
+  } catch (error) {
+    console.error("Request Return API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to submit return request',
       error: error.message
     };
   }
