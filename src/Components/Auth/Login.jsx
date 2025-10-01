@@ -139,6 +139,22 @@ export default function Login() {
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
+              <div className="flex justify-between items-center mt-1">
+                {errors.password ? (
+                  <p className="text-red-500 text-xs lg:text-sm">{errors.password}</p>
+                ) : errors.submit ? (
+                  <p className="text-red-500 text-xs lg:text-sm">{errors.submit}</p>
+                ) : (
+                  <span></span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => console.log('Forgot password clicked')}
+                  className="text-yellow-600 hover:text-yellow-700 text-xs lg:text-sm font-medium hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-red-500 text-xs lg:text-sm mt-1">
                   {errors.password}
