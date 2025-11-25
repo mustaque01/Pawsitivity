@@ -20,7 +20,7 @@ import Stats from './Components/Stats Page/Stats'
 import EmpoweringSection from './empowering section/EmpoweringSection'
 
 // Static Pages
-import ContactUs from './Components/contactus'
+import ContactUs from './Components/Contactus'
 import MediaPage from './Components/MediaPage'
 import AboutUs from './Components/Aboutus/Aboutus'
 
